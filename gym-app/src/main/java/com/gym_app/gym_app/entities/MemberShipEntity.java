@@ -1,6 +1,5 @@
 package com.gym_app.gym_app.entities;
 
-import com.gym_app.gym_app.entities.emuns.MemberShipName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,8 +21,7 @@ public class MemberShipEntity {
     private Long id;
 
     @Column(unique = true)
-    @Enumerated(value = EnumType.STRING)
-    private MemberShipName name;
+    private String name;
 
     @ManyToMany
     @JoinTable(

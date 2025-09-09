@@ -1,6 +1,5 @@
 package com.gym_app.gym_app.dto;
 
-import com.gym_app.gym_app.entities.emuns.ClassesName;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -11,7 +10,7 @@ import java.util.List;
 public record ClassesDto(
 
         @NotBlank
-        ClassesName name,
+        String name,
 
         @NotNull
         List<Long> scheduleId,

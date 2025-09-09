@@ -22,7 +22,7 @@ public interface MemberShipMapper {
         }
 
         return classesEntities.stream()
-                .map(c->c.getName().name())
+                .map(ClassesEntity::getName)
                 .toList();
 
     }

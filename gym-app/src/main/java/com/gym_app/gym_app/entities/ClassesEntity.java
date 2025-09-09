@@ -1,6 +1,5 @@
 package com.gym_app.gym_app.entities;
 
-import com.gym_app.gym_app.entities.emuns.ClassesName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,8 +20,7 @@ public class ClassesEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(value = EnumType.STRING)
-    private ClassesName name;
+    private String name;
 
     @OneToMany
     @JoinColumn(name = "schedule_id")
