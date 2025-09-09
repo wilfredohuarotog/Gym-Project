@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +42,7 @@ public class MemberShipServiceImpl implements MemberShipService {
                         classesRepository.findById(id)
                                 .orElseThrow(() -> new BadRequestException("There is no class with this ID: " + id))
                 )
-                .toList();
+                .collect(Collectors.toList());
 
         memberShipRepository.save(MemberShipEntity.builder()
                 .name(memberShipDto.name())
@@ -55,7 +56,7 @@ public class MemberShipServiceImpl implements MemberShipService {
         MemberShipEntity memberShip = memberShipRepository.findById(id)
                 .orElseThrow(()->new BadRequestException("there is no membership with this ID: "+id));
 
-        if(memberShipRepository.existsByName(memberShipDto.name())&&!memberShipDto.name().equals(memberShip.getName())){
+        if(memberShipRepository.existsByNameAndIdNot(memberShipDto.name(),id)){
             throw new BadRequestException("The membership with this name already exists");
         }
 
@@ -64,14 +65,20 @@ public class MemberShipServiceImpl implements MemberShipService {
                         classesRepository.findById(idAux)
                                 .orElseThrow(() -> new BadRequestException("There is no class with this ID: " + idAux))
                 )
-                .toList();
+                .collect(Collectors.toList());
 
         memberShip.setClasses(classes);
+        memberShipRepository.save(memberShip);
         return memberShipMapper.toMemberShipResponseDto(memberShip);
     }
 
     @Override
     public void deleteMemberShip(Long id) {
+
+        MemberShipEntity memberShip = memberShipRepository.findById(id)
+                .orElseThrow(()->new BadRequestException("There is no membership with this ID: "+ id));
+
+        memberShipRepository.delete(memberShip);
 
     }
 }

@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface MemberShipRepository extends JpaRepository<MemberShipEntity,Long> {
 
-    boolean existsByName(MemberShipName Name);
+    boolean existsByName(MemberShipName name);
+    boolean existsByNameAndIdNot(MemberShipName name, Long id);
 
 }

@@ -27,6 +27,7 @@ public class MemberShipEntity {
 
     @ManyToMany
     @JoinTable(
+            name = "member_ship_and_classes",
             joinColumns = @JoinColumn(name = "member_ship_id"),
             inverseJoinColumns = @JoinColumn(name = "class_id")
     )
