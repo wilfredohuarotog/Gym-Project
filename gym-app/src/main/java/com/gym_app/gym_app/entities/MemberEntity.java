@@ -34,14 +34,10 @@ public class MemberEntity {
     @Enumerated(value = EnumType.STRING)
     private MemberStatus status;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "agreement_id")
     private AgreementEntity agreement;
 
-    @ManyToMany
-    @JoinTable(
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "registration_id")
-    )
-    private List<RegistrationEntity> registration;
+    @OneToMany(mappedBy = "member" )
+    private List<RegistrationEntity> registrations;
 }

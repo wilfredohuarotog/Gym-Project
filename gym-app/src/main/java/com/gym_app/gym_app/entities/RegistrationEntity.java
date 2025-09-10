@@ -18,8 +18,9 @@ public class RegistrationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany(mappedBy = "registration")
-    private List<MemberEntity> memberEntities;
+    @ManyToOne
+    @JoinColumn (name = "member_id")
+    private MemberEntity member;
 
     @ManyToOne
     @JoinColumn(name = "class_id")

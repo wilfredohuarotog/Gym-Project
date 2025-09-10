@@ -8,6 +8,9 @@ public record RegistrationDto(
         Long memberId,
 
         @NotNull
-        Long classId
+        Long classId,
+
+        @NotNull
+        Long scheduleId
 ) {
 }

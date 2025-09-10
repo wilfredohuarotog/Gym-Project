@@ -1,7 +1,9 @@
 package com.gym_app.gym_app.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +12,7 @@ import java.time.LocalDate;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Data
 @Table(name = "agreements")
 public class AgreementEntity {
@@ -26,6 +29,10 @@ public class AgreementEntity {
 
     @Column(nullable = false)
     private LocalDate endDate;
+
+    @OneToOne(mappedBy = "agreement")
+
+    private MemberEntity member;
 
     @OneToOne
     @JoinColumn(name = "member_ship_id")
