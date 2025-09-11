@@ -27,7 +27,8 @@ public interface ClassesMapper {
             return List.of();
         }
         return schedules.stream()
-                .map(s->s.getDay()+": "+s.getStartTime()+" "+s.getEndTime())
+                .map(s-> "ID: "+s.getId()+"| "
+                        +s.getDay()+": "+s.getStartTime()+" "+s.getEndTime())
                 .toList();
 
     }

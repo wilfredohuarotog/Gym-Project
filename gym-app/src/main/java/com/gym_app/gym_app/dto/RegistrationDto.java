@@ -1,14 +1,15 @@
 package com.gym_app.gym_app.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record RegistrationDto(
 
-        @NotNull
-        Long memberId,
+        @NotBlank
+        String dni,
 
         @NotNull
-        Long classId,
+        Long classesId,
 
         @NotNull
         Long scheduleId

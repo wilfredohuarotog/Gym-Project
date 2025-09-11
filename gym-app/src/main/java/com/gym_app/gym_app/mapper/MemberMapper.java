@@ -38,13 +38,23 @@ public interface MemberMapper {
             return List.of();
         }
 
+//        return registration.stream()
+//                .map(reg ->
+//                        reg.getClasses().getName()+"-> "
+//                                +reg.getClasses().getSchedule().stream()
+//                                .map(sch -> sch.getDay()+": "+sch.getStartTime()+" - "+sch.getEndTime())
+//                                .collect(Collectors.joining(", "))
+//                )
+//                .collect(Collectors.toList());
+
         return registration.stream()
                 .map(reg ->
                         reg.getClasses().getName()+"-> "
-                                +reg.getClasses().getSchedule().stream()
-                                .map(sch -> sch.getDay()+": "+sch.getStartTime()+" - "+sch.getEndTime())
-                                .collect(Collectors.joining(", "))
-                )
+                                +reg.getSchedule().getDay()
+                                +": "+reg.getSchedule().getStartTime()
+                                +" - "+reg.getSchedule().getEndTime())
                 .collect(Collectors.toList());
+
+
     }
 }
