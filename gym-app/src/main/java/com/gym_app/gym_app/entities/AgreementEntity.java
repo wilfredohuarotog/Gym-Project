@@ -24,17 +24,16 @@ public class AgreementEntity {
     @Column(nullable = false)
     private Long months;
 
-    @Column(nullable = false)
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
-    @Column(nullable = false)
+    @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
     @OneToOne(mappedBy = "agreement")
-
     private MemberEntity member;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "member_ship_id")
     private MemberShipEntity memberShip;
 

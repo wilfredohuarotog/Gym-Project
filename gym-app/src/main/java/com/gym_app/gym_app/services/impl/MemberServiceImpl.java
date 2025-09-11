@@ -13,6 +13,8 @@ import com.gym_app.gym_app.repositories.MemberRepository;
 import com.gym_app.gym_app.repositories.MemberShipRepository;
 import com.gym_app.gym_app.services.MemberService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,11 +23,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final MemberShipRepository memberShipRepository;
     private final MemberMapper memberMapper;
+    private final KafkaTemplate kafkaTemplate;
 
 
     @Override
@@ -64,6 +68,11 @@ public class MemberServiceImpl implements MemberService {
         member.setAgreement(agreement);
         member.setStatus(MemberStatus.ACTIVE);
         memberRepository.save(member);
+
+        log.info("SEND MESSAGERRRRRRR");
+        kafkaTemplate.send("new-member",memberMapper.toMemberResponseDto(member));
+        log.info("Mensajeeeeee enviadoooooo");
+
     }
 
     @Override

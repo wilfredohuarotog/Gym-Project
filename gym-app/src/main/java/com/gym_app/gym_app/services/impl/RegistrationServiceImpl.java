@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,13 +48,17 @@ public class RegistrationServiceImpl implements RegistrationService {
             throw new BadRequestException("Schedule incorrect");
         }
 
+        if(schedule.getDay().equals(LocalDate.now().getDayOfWeek())&&schedule.getEndTime().isBefore(LocalTime.now())){
+            throw new BadRequestException("The class has ended. Registration for the next class begins the following day.");
+        }
+
         if (registrationRepository.existsByMemberIdAndClassesIdAndScheduleId(member.getId(), classes.getId(), schedule.getId())){
             throw new BadRequestException("There is already a record with the same class and schedule for this member");
         }
 
         if(classes.getCapacity()<=registrationRepository
                 .countByClassesIdAndScheduleId(classes.getId(),schedule.getId())){
-            throw new ResourceNotFoundException("The class in this schedule is full");
+            throw new ResourceNotFoundException("The class in this schedule is full. Registration for the next class begins the following day");
         }
 
         RegistrationEntity registration = RegistrationEntity.builder()

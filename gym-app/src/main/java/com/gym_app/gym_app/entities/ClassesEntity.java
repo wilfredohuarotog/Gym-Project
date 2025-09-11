@@ -23,7 +23,7 @@ public class ClassesEntity {
     private String name;
 
     @OneToMany
-    @JoinColumn(name = "schedule_id")
+    @JoinColumn(name = "classes_id")
     private List<ScheduleEntity> schedule;
 
     private Long capacity;

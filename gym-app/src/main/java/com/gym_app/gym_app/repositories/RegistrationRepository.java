@@ -5,6 +5,8 @@ import com.gym_app.gym_app.entities.RegistrationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,5 +16,7 @@ public interface RegistrationRepository extends JpaRepository<RegistrationEntity
     Long countByClassesIdAndScheduleId(Long classesId, Long ScheduleId);
     boolean existsByMemberIdAndClassesIdAndScheduleId(Long memberId, Long classesId, Long scheduleId);
     List<RegistrationEntity> findByMember(MemberEntity member);
+    List<RegistrationEntity> findByScheduleDay(DayOfWeek day);
+
 
 }
