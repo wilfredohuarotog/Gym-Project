@@ -20,5 +20,5 @@ public interface MemberRepository extends JpaRepository<MemberEntity,Long> {
     boolean existsByEmailAndIdNot (String email, Long id);
     boolean existsByPhoneNumberAndIdNot(String phone, Long id);
     Optional<MemberEntity> findByDni(String dni);
-    List<MemberEntity> findByStatusAndAgreement_EndDateBefore(MemberStatus status, LocalDate date);
+    List<MemberEntity> findByStatusAndAgreementEndDateBefore(MemberStatus status, LocalDate date);
 }

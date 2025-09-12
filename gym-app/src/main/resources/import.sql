@@ -2,12 +2,12 @@ INSERT INTO coach (first_name, last_name, phone, dni) VALUES ('Jaime','Espinoza'
 INSERT INTO coach (first_name, last_name, phone, dni) VALUES ('Raul','Mendez','983234125','78898232');
 INSERT INTO coach (first_name, last_name, phone, dni) VALUES ('Ximena','Calderon','983234126','78898233');
 
-INSERT INTO class (name, capacity, coach_id) VALUES ('ZUMBA', 50, 3);
+INSERT INTO class (name, capacity, coach_id) VALUES ('ZUMBA', 2, 3);
 INSERT INTO class (name, capacity, coach_id) VALUES ('YOGA', 15, 1);
 INSERT INTO class (name, capacity, coach_id) VALUES ('CROSSFIT', 20, 1);
 
 INSERT INTO schedule (day, start_time, end_time, classes_id) VALUES ('MONDAY', '10:00', '12:00', 1);
-INSERT INTO schedule (day, start_time, end_time, classes_id) VALUES ('WEDNESDAY', '16:00', '18:00',1);
+INSERT INTO schedule (day, start_time, end_time, classes_id) VALUES ('WEDNESDAY', '11:45', '11:50',1);
 INSERT INTO schedule (day, start_time, end_time, classes_id) VALUES ('FRIDAY', '18:30', '20:30',2);
 INSERT INTO schedule (day, start_time, end_time, classes_id) VALUES ('THURSDAY', '12:15', '12:20',3);
 
@@ -49,4 +49,6 @@ INSERT INTO registrations (class_id, member_id, schedule_id) VALUES (3, 3, 3);
 
 -- Expiró hace poco en agosto 2025 (6 meses GOLD)
 INSERT INTO agreements (months, start_date, end_date, member_ship_id) VALUES (6, '2025-02-01', '2025-08-01', 3);
-INSERT INTO members (first_name, last_name, dni, email, phone_number, status, agreement_id) VALUES ('Melissa', 'Lopez', '11223399', 'wasa@gmail.com', '956123111', 'ACTIVE', 4);
+INSERT INTO agreements (months, start_date, end_date, member_ship_id) VALUES (6, '2025-02-01', '2025-08-02', 3);
+INSERT INTO members (first_name, last_name, dni, email, phone_number, status, agreement_id) VALUES ('Melissa', 'Lopez', '11223399', 'pruebaservicios2299@gmail.com', '956123111', 'ACTIVE', 4);
+INSERT INTO members (first_name, last_name, dni, email, phone_number, status, agreement_id) VALUES ('Melissa', 'Lopez', '11221111', 'wilfredohuarotogabino@gmail.com', '9561232222', 'ACTIVE', 5);

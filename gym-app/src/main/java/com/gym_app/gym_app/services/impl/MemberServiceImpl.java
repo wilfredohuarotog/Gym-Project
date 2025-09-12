@@ -69,9 +69,7 @@ public class MemberServiceImpl implements MemberService {
         member.setStatus(MemberStatus.ACTIVE);
         memberRepository.save(member);
 
-        log.info("SEND MESSAGERRRRRRR");
         kafkaTemplate.send("new-member",memberMapper.toMemberResponseDto(member));
-        log.info("Mensajeeeeee enviadoooooo");
 
     }
 

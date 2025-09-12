@@ -2,8 +2,10 @@ package com.gym_app.gym_app.scheduling;
 
 import com.gym_app.gym_app.entities.MemberEntity;
 import com.gym_app.gym_app.entities.emuns.MemberStatus;
+import com.gym_app.gym_app.mapper.MemberMapper;
 import com.gym_app.gym_app.repositories.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -15,17 +17,20 @@ import java.util.List;
 public class MemerStatusTasks {
 
     private final MemberRepository memberRepository;
+    private final MemberMapper memberMapper;
+    private final KafkaTemplate kafkaTemplate;
 
-    @Scheduled(cron = "0 40 17 * * *") // todos los días a la medianoche
+    @Scheduled(cron = "0 0 6 * * *")
     public void deactivateExpiredMembers() {
         List<MemberEntity> expiredMembers =
-                memberRepository.findByStatusAndAgreement_EndDateBefore(MemberStatus.ACTIVE, LocalDate.now());
-
-        expiredMembers.forEach(member -> member.setStatus(MemberStatus.INACTIVE));
+                memberRepository.findByStatusAndAgreementEndDateBefore(MemberStatus.ACTIVE, LocalDate.now());
 
         if (!expiredMembers.isEmpty()) {
+            expiredMembers.forEach(member -> {
+                member.setStatus(MemberStatus.INACTIVE);
+                kafkaTemplate.send("membership-expired",memberMapper.toMemberResponseDto(member)) ;
+            });
             memberRepository.saveAll(expiredMembers);
-            System.out.println("Se desactivaron " + expiredMembers.size() + " miembros vencidos.");
         }
     }
 }

@@ -18,21 +18,40 @@ import java.util.stream.Collectors;
 public class KafkaListenerService {
 
     private final JavaMailSender javaMailSender;
+    private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "new-member", groupId = "mygroup")
-    public void sendEmail (String messageJson) throws JsonProcessingException {
+    public void sendEmailNewMember (String messageJson) throws JsonProcessingException {
 
-        //MemberAgreementDto memberAgreementDto = (MemberAgreementDto) object;
-        ObjectMapper mapper = new ObjectMapper();
-        MemberAgreementDto memberAgreementDto = mapper.readValue(messageJson, MemberAgreementDto.class);
+        //ObjectMapper mapper = new ObjectMapper();
+        MemberAgreementDto memberAgreementDto = objectMapper.readValue(messageJson, MemberAgreementDto.class);
 
         String message = "Welcome "+ memberAgreementDto.name()+". Your agreement ID: "+memberAgreementDto.agreementId();
 
         SimpleMailMessage mailMessage = new SimpleMailMessage();
 
         mailMessage.setFrom("pruebaservicios2299@gmail.com");
-        mailMessage.setTo("pruebaservicios2299@gmail.com");
+        mailMessage.setTo(memberAgreementDto.email());
         mailMessage.setSubject("WELCOMEEEE");
+        mailMessage.setText(message);
+
+        javaMailSender.send(mailMessage);
+
+    }
+
+    @KafkaListener(topics = "membership-expired", groupId = "mygroup")
+    public void sendEmailMemberShipExpired (String messageJson) throws JsonProcessingException {
+
+        //ObjectMapper mapper = new ObjectMapper();
+        MemberAgreementDto memberAgreementDto = objectMapper.readValue(messageJson, MemberAgreementDto.class);
+
+        String message = "Good morning "+ memberAgreementDto.name()+". Your membership expired";
+
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+
+        mailMessage.setFrom("pruebaservicios2299@gmail.com");
+        mailMessage.setTo(memberAgreementDto.email());
+        mailMessage.setSubject("MEMBERSHIP EXPIRED");
         mailMessage.setText(message);
 
         javaMailSender.send(mailMessage);
