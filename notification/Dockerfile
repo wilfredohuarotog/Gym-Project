@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline
 
 COPY ./src /app/src
 
-RUN mvn clean install -Dmaven.test.skip=true
+RUN mvn clean package -Dmaven.test.skip=true
 
 
 FROM openjdk:17.0.1-jdk-slim
