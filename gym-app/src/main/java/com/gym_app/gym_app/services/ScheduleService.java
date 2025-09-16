@@ -10,7 +10,7 @@ public interface ScheduleService {
 
     ScheduleDto findById(Long id);
 
-    void saveSchedule(ScheduleDto scheduleDto);
+    ScheduleDto saveSchedule(ScheduleDto scheduleDto);
 
     ScheduleDto updateSchedule(ScheduleDto scheduleDto, Long id);
 

@@ -41,6 +41,6 @@ public class MemberEntity {
     @JoinColumn(name = "agreement_id")
     private AgreementEntity agreement;
 
-    @OneToMany(mappedBy = "member" )
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<RegistrationEntity> registrations;
 }

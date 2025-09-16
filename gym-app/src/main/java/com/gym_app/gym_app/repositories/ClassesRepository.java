@@ -15,7 +15,8 @@ public interface ClassesRepository extends JpaRepository<ClassesEntity,Long> {
 //    boolean existsScheduleInAnyClass(@Param("scheduleId") Long scheduleId);
 
     boolean existsByName(String name);
-    boolean existsBySchedule_Id(Long scheduleId);
+    boolean existsByScheduleIdAndIdNot(Long scheduleId, Long id);
     boolean existsById(Long id);
     Optional<ClassesEntity> findBySchedule_Id(Long scheduleId);
+    boolean existsByCoachId(Long id);
 }

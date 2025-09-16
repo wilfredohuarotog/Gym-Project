@@ -17,7 +17,7 @@ public class RegistrationTasks {
 
     public final RegistrationRepository registrationRepository;
 
-    @Scheduled(cron = "0 42 11 * * *")
+    @Scheduled(cron = "0 59 23 * * *")
     public void deleteExpiredRegistrations(){
         LocalDate today = LocalDate.now();
 

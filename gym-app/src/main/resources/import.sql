@@ -50,5 +50,5 @@ INSERT INTO registrations (class_id, member_id, schedule_id) VALUES (3, 3, 3);
 -- Expiró hace poco en agosto 2025 (6 meses GOLD)
 INSERT INTO agreements (months, start_date, end_date, member_ship_id) VALUES (6, '2025-02-01', '2025-08-01', 3);
 INSERT INTO agreements (months, start_date, end_date, member_ship_id) VALUES (6, '2025-02-01', '2025-08-02', 3);
-INSERT INTO members (first_name, last_name, dni, email, phone_number, status, agreement_id) VALUES ('Melissa', 'Lopez', '11223399', 'pruebaservicios2299@gmail.com', '956123111', 'ACTIVE', 4);
+INSERT INTO members (first_name, last_name, dni, email, phone_number, status, agreement_id) VALUES ('Melissa', 'Lopez', '11223399', 'pruebaservicios2299@gmail.com', '956123111', 'INACTIVE', 4);
 INSERT INTO members (first_name, last_name, dni, email, phone_number, status, agreement_id) VALUES ('Melissa', 'Lopez', '11221111', 'wilfredohuarotogabino@gmail.com', '9561232222', 'ACTIVE', 5);

@@ -13,10 +13,12 @@ import com.gym_app.gym_app.repositories.CoachRepository;
 import com.gym_app.gym_app.repositories.ScheduleRepository;
 import com.gym_app.gym_app.services.ClassesService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +34,7 @@ public class ClassesServiceImpl implements ClassesService {
     public List<ClassesResponseDto> findAllClasses() {
         return classesRepository.findAll().stream()
                 .map(classesMapper::toClassesResponse)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -60,13 +62,13 @@ public class ClassesServiceImpl implements ClassesService {
                                     .orElseThrow(()->new BadRequestException("There is no schedule with ID: "+id));
 
                             //Validando que el horario no este ocupado por otra clase (no puede haber dos o más clases en un mismo horario)
-                            if(classesRepository.existsBySchedule_Id(id)){
+                            if(classesRepository.existsByScheduleIdAndIdNot(id, null)){
                                 ClassesEntity classes = classesRepository.findBySchedule_Id(id).get();
                                 throw new BadRequestException("El horario con ID: "+id+" ya está la clase: "+ classes.getName());
                             }
                             return scheduleEntity;
                         })
-                .toList();
+                .collect(Collectors.toList());
 
         classesRepository.save(ClassesEntity.builder()
                         .name(classesDto.name())
@@ -91,14 +93,14 @@ public class ClassesServiceImpl implements ClassesService {
                             .orElseThrow(()->new BadRequestException("There is no schedule with ID: "+idAux));
 
                     //Validando que el horario no este ocupado por otra clase (no puede haber dos o más clases en un mismo horario)
-                    if(classesRepository.existsBySchedule_Id(idAux)){
+                    if(classesRepository.existsByScheduleIdAndIdNot(idAux, id)){
                         ClassesEntity classesAux = classesRepository.findBySchedule_Id(idAux).get();
                         throw new BadRequestException("El horario con ID: "+idAux+" ya está la clase: "+ classesAux.getName());
                     }
                     return scheduleEntity;
 
                 })
-                .toList();
+                .collect(Collectors.toList());
 
         classes.setCapacity(classesDto.capacity());
         classes.setName(classesDto.name());
@@ -113,6 +115,11 @@ public class ClassesServiceImpl implements ClassesService {
         ClassesEntity classes = classesRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("There is no class with this ID"));
 
-        classesRepository.delete(classes);
+        try{
+            classesRepository.delete(classes);
+        } catch (DataIntegrityViolationException e){
+            throw new BadRequestException("Cannot delete class due to existing reference in the database");
+        }
+
     }
 }

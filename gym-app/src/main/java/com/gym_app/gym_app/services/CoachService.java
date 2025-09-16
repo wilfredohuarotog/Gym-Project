@@ -10,7 +10,7 @@ public interface CoachService {
 
     CoachDto findById(Long id);
 
-    void saveCoach(CoachDto coachDto);
+    CoachDto saveCoach(CoachDto coachDto);
 
     CoachDto updateCoach(CoachDto coachDto, Long id);
 

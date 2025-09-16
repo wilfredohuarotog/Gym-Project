@@ -11,13 +11,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/coach")
+@RequestMapping("/coaches")
 public class CoachController {
 
     private final CoachService coachService;
 
     @GetMapping
-    public ResponseEntity<List<CoachDto>> findAllCoach(){
+    public ResponseEntity<List<CoachDto>> findAllCoaches(){
         return new ResponseEntity<>(coachService.findAllCoach(), HttpStatus.OK);
     }
 
@@ -27,9 +27,9 @@ public class CoachController {
     }
 
     @PostMapping
-    public ResponseEntity<?> saveCoach(@RequestBody CoachDto coachDto){
-        coachService.saveCoach(coachDto);
-        return new ResponseEntity<>("Coach saved",HttpStatus.CREATED);
+    public ResponseEntity<CoachDto> saveCoach(@RequestBody CoachDto coachDto){
+        CoachDto savedCoach = coachService.saveCoach(coachDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedCoach);
     }
 
     @PutMapping("/{id}")
@@ -40,7 +40,7 @@ public class CoachController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCoach(@PathVariable Long id){
         coachService.deleteCoach(id);
-        return ResponseEntity.ok("Coach deleted");
+        return ResponseEntity.noContent().build();
     }
 
 }

@@ -18,7 +18,7 @@ public class ScheduleController {
 
     @GetMapping
     public ResponseEntity<List<ScheduleDto>> findAllSchedule(){
-        return new ResponseEntity<>(scheduleService.findAllSchedule(), HttpStatus.OK);
+        return ResponseEntity.ok(scheduleService.findAllSchedule());
     }
 
     @GetMapping("/{id}")
@@ -27,9 +27,9 @@ public class ScheduleController {
     }
 
     @PostMapping
-    public ResponseEntity<?> saveSchedule(@RequestBody ScheduleDto scheduleDto){
-        scheduleService.saveSchedule(scheduleDto);
-        return new ResponseEntity<>("Schedule saved",HttpStatus.CREATED);
+    public ResponseEntity<ScheduleDto> saveSchedule(@RequestBody ScheduleDto scheduleDto){
+        ScheduleDto schedule = scheduleService.saveSchedule(scheduleDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(schedule);
     }
 
     @PutMapping("/{id}")
@@ -40,6 +40,6 @@ public class ScheduleController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteSchedule(@PathVariable Long id){
         scheduleService.deleteSchedule(id);
-        return ResponseEntity.ok("Schedule deleted");
+        return ResponseEntity.noContent().build();
     }
 }

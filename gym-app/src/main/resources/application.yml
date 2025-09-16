@@ -1,15 +1,13 @@
 server:
-  port: 8081
+  port: 8080
 
 spring:
   application:
     name: gym-app
-  config:
-    import: optional:configserver:http://localhost:8888
   datasource:
-    url: jdbc:mysql://localhost:3306/gymdb
-    username: root
-    password: root1234
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USER}
+    password: ${DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
@@ -22,12 +20,6 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
 
-eureka:
-  client:
-    fetch-registry: true
-    register-with-eureka: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka
 
 
 
