@@ -1,0 +1,20 @@
+# === Spring Boot / Maven ===
+target/
+*.jar
+*.war
+*.ear
+
+# === Archivos de entorno ===
+.env
+
+# === IDEs ===
+.idea/
+.vscode/
+*.iml
+
+# === Logs ===
+*.log
+
+# === Otros temporales ===
+*.class
+.DS_Store
