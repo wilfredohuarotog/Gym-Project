@@ -4,6 +4,8 @@ import com.gym_app.gym_app.entities.MemberEntity;
 import com.gym_app.gym_app.entities.RegistrationEntity;
 import com.gym_app.gym_app.entities.emuns.MemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -21,4 +23,7 @@ public interface MemberRepository extends JpaRepository<MemberEntity,Long> {
     boolean existsByPhoneNumberAndIdNot(String phone, Long id);
     Optional<MemberEntity> findByDni(String dni);
     List<MemberEntity> findByStatusAndAgreementEndDateBefore(MemberStatus status, LocalDate date);
+
+    @Query( "SELECT m.status FROM MemberEntity m WHERE m.dni = :dni")
+    MemberStatus findStatusByDni(@Param("dni") String dni);
 }

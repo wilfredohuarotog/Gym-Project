@@ -6,6 +6,7 @@ import com.gym_app.gym_app.entities.ClassesEntity;
 import com.gym_app.gym_app.entities.MemberEntity;
 import com.gym_app.gym_app.entities.RegistrationEntity;
 import com.gym_app.gym_app.entities.ScheduleEntity;
+import com.gym_app.gym_app.entities.emuns.MemberStatus;
 import com.gym_app.gym_app.exceptions.BadRequestException;
 import com.gym_app.gym_app.exceptions.ResourceNotFoundException;
 import com.gym_app.gym_app.mapper.RegistrationMapper;
@@ -37,6 +38,10 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         MemberEntity member = memberRepository.findByDni(registrationDto.dni())
                 .orElseThrow(() -> new ResourceNotFoundException("Member with this DNI doesn't exist"));
+
+        if (memberRepository.findStatusByDni(registrationDto.dni()).equals(MemberStatus.INACTIVE)){
+            throw new BadRequestException("Member is inactive");
+        }
 
         ClassesEntity classes = classesRepository.findById(registrationDto.classesId())
                 .orElseThrow(() -> new ResourceNotFoundException("Class with this ID  doesn't exist"));
