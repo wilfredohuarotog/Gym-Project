@@ -1,6 +1,6 @@
 package com.gym_app.gym_app.mapper;
 
-import com.gym_app.gym_app.dto.CoachDto;
+import com.gym_app.gym_app.dto.requests.CoachDto;
 import com.gym_app.gym_app.entities.CoachEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

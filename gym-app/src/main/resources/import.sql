@@ -1,19 +1,19 @@
-INSERT INTO coach (first_name, last_name, phone, dni) VALUES ('Jaime','Espinoza','983234122','78898231');
-INSERT INTO coach (first_name, last_name, phone, dni) VALUES ('Raul','Mendez','983234125','78898232');
-INSERT INTO coach (first_name, last_name, phone, dni) VALUES ('Ximena','Calderon','983234126','78898233');
+INSERT INTO coaches (first_name, last_name, phone, dni) VALUES ('Jaime','Espinoza','983234122','78898231');
+INSERT INTO coaches (first_name, last_name, phone, dni) VALUES ('Raul','Mendez','983234125','78898232');
+INSERT INTO coaches (first_name, last_name, phone, dni) VALUES ('Ximena','Calderon','983234126','78898233');
 
-INSERT INTO class (name, capacity, coach_id) VALUES ('ZUMBA', 2, 3);
-INSERT INTO class (name, capacity, coach_id) VALUES ('YOGA', 15, 1);
-INSERT INTO class (name, capacity, coach_id) VALUES ('CROSSFIT', 20, 1);
+INSERT INTO classes (name, capacity, coach_id) VALUES ('ZUMBA', 2, 3);
+INSERT INTO classes (name, capacity, coach_id) VALUES ('YOGA', 15, 1);
+INSERT INTO classes (name, capacity, coach_id) VALUES ('CROSSFIT', 20, 1);
 
-INSERT INTO schedule (day, start_time, end_time, classes_id) VALUES ('MONDAY', '10:00', '12:00', 1);
-INSERT INTO schedule (day, start_time, end_time, classes_id) VALUES ('WEDNESDAY', '11:45', '11:50',1);
-INSERT INTO schedule (day, start_time, end_time, classes_id) VALUES ('FRIDAY', '18:30', '20:30',2);
-INSERT INTO schedule (day, start_time, end_time, classes_id) VALUES ('THURSDAY', '12:15', '12:20',3);
+INSERT INTO schedules (day, start_time, end_time, classes_id) VALUES ('MONDAY', '10:00', '12:00', 1);
+INSERT INTO schedules (day, start_time, end_time, classes_id) VALUES ('WEDNESDAY', '11:45', '11:50',1);
+INSERT INTO schedules (day, start_time, end_time, classes_id) VALUES ('FRIDAY', '18:30', '20:30',2);
+INSERT INTO schedules (day, start_time, end_time, classes_id) VALUES ('THURSDAY', '12:15', '12:20',3);
 
-INSERT INTO member_ship (name) VALUES ("PREMIUM");
-INSERT INTO member_ship (name) VALUES ("BASIC");
-INSERT INTO member_ship (name) VALUES ("GOLD");
+INSERT INTO member_ships (name) VALUES ("PREMIUM");
+INSERT INTO member_ships (name) VALUES ("BASIC");
+INSERT INTO member_ships (name) VALUES ("GOLD");
 
 INSERT INTO member_ship_and_classes (member_ship_id, class_id) VALUES (1,1);
 INSERT INTO member_ship_and_classes (member_ship_id, class_id) VALUES (1,2);

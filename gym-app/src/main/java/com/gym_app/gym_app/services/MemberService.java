@@ -1,13 +1,10 @@
 package com.gym_app.gym_app.services;
 
-import com.gym_app.gym_app.dto.MemberDto;
+import com.gym_app.gym_app.dto.requests.MemberDto;
 import com.gym_app.gym_app.dto.responses.ActiveMemberResponseDto;
 import com.gym_app.gym_app.dto.responses.MemberResponseDto;
-import com.gym_app.gym_app.entities.MemberEntity;
 
-import javax.swing.text.html.Option;
 import java.util.List;
-import java.util.Optional;
 
 public interface MemberService {
 

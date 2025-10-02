@@ -1,6 +1,6 @@
 package com.gym_app.gym_app.mapper;
 
-import com.gym_app.gym_app.dto.ScheduleDto;
+import com.gym_app.gym_app.dto.requests.ScheduleDto;
 import com.gym_app.gym_app.entities.ScheduleEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

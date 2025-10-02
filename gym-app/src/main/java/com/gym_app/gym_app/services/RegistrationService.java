@@ -1,6 +1,6 @@
 package com.gym_app.gym_app.services;
 
-import com.gym_app.gym_app.dto.RegistrationDto;
+import com.gym_app.gym_app.dto.requests.RegistrationDto;
 import com.gym_app.gym_app.dto.responses.RegistrationResponseDto;
 
 import java.util.List;

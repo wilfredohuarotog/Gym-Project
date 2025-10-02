@@ -1,8 +1,5 @@
-package com.gym_app.gym_app.dto;
+package com.gym_app.gym_app.dto.requests;
 
-import com.gym_app.gym_app.entities.ClassesEntity;
-import jakarta.persistence.*;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

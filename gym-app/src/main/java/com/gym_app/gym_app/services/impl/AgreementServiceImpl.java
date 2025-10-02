@@ -1,16 +1,14 @@
 package com.gym_app.gym_app.services.impl;
 
-import com.gym_app.gym_app.dto.AgreementRenewalDto;
+import com.gym_app.gym_app.dto.requests.AgreementRenewalDto;
 import com.gym_app.gym_app.dto.responses.AgreementRenewalResponseDto;
 import com.gym_app.gym_app.entities.AgreementEntity;
-import com.gym_app.gym_app.entities.MemberEntity;
 import com.gym_app.gym_app.entities.MemberShipEntity;
 import com.gym_app.gym_app.entities.emuns.MemberStatus;
 import com.gym_app.gym_app.exceptions.BadRequestException;
 import com.gym_app.gym_app.exceptions.ResourceNotFoundException;
 import com.gym_app.gym_app.mapper.AgreementMapper;
 import com.gym_app.gym_app.repositories.AgreementRepository;
-import com.gym_app.gym_app.repositories.MemberRepository;
 import com.gym_app.gym_app.repositories.MemberShipRepository;
 import com.gym_app.gym_app.services.AgreementService;
 import lombok.RequiredArgsConstructor;

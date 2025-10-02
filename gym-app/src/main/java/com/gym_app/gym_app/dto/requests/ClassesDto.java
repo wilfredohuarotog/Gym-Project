@@ -1,4 +1,4 @@
-package com.gym_app.gym_app.dto;
+package com.gym_app.gym_app.dto.requests;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -19,8 +19,8 @@ public record ClassesDto(
         Long coachId,
 
         @NotNull
-        @Min(value = 10)
-        @Max(value = 50)
+        @Min(value = 10, message = "the minimum capacity is 10")
+        @Max(value = 50, message = "the minimum capacity is 10")
         Long capacity
 
 ) {

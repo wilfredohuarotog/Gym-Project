@@ -1,6 +1,6 @@
 package com.gym_app.gym_app.mapper;
 
-import com.gym_app.gym_app.dto.MemberDto;
+import com.gym_app.gym_app.dto.requests.MemberDto;
 import com.gym_app.gym_app.dto.responses.ActiveMemberResponseDto;
 import com.gym_app.gym_app.dto.responses.MemberResponseDto;
 import com.gym_app.gym_app.entities.MemberEntity;

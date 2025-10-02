@@ -1,6 +1,6 @@
 package com.gym_app.gym_app.services.impl;
 
-import com.gym_app.gym_app.dto.MemberShipDto;
+import com.gym_app.gym_app.dto.requests.MemberShipDto;
 import com.gym_app.gym_app.dto.responses.MemberShipResponseDto;
 import com.gym_app.gym_app.entities.ClassesEntity;
 import com.gym_app.gym_app.entities.MemberShipEntity;

@@ -1,6 +1,6 @@
 package com.gym_app.gym_app.services.impl;
 
-import com.gym_app.gym_app.dto.CoachDto;
+import com.gym_app.gym_app.dto.requests.CoachDto;
 import com.gym_app.gym_app.entities.CoachEntity;
 import com.gym_app.gym_app.exceptions.BadRequestException;
 import com.gym_app.gym_app.exceptions.ResourceNotFoundException;
@@ -13,7 +13,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 
 /**

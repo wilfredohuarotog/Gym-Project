@@ -1,6 +1,6 @@
 package com.gym_app.gym_app.services.impl;
 
-import com.gym_app.gym_app.dto.ClassesDto;
+import com.gym_app.gym_app.dto.requests.ClassesDto;
 import com.gym_app.gym_app.dto.responses.ClassesResponseDto;
 import com.gym_app.gym_app.entities.ClassesEntity;
 import com.gym_app.gym_app.entities.CoachEntity;
@@ -17,7 +17,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

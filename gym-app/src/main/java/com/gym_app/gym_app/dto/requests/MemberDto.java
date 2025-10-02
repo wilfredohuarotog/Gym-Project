@@ -1,9 +1,9 @@
-package com.gym_app.gym_app.dto;
+package com.gym_app.gym_app.dto.requests;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
-public record MemberDto (
+public record MemberDto(
 
         @NotBlank
         @Size(min = 3, max = 30, message = "Please enter your firstname correctly")
@@ -28,6 +28,4 @@ public record MemberDto (
         @Valid
         AgreementDto agreement
 ) {
-
-
 }

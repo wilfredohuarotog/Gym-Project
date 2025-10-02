@@ -1,6 +1,6 @@
 package com.gym_app.gym_app.services.impl;
 
-import com.gym_app.gym_app.dto.RegistrationDto;
+import com.gym_app.gym_app.dto.requests.RegistrationDto;
 import com.gym_app.gym_app.dto.responses.RegistrationResponseDto;
 import com.gym_app.gym_app.entities.ClassesEntity;
 import com.gym_app.gym_app.entities.MemberEntity;
@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

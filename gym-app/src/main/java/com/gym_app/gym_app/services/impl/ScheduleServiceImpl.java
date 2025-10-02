@@ -1,6 +1,6 @@
 package com.gym_app.gym_app.services.impl;
 
-import com.gym_app.gym_app.dto.ScheduleDto;
+import com.gym_app.gym_app.dto.requests.ScheduleDto;
 import com.gym_app.gym_app.entities.ScheduleEntity;
 import com.gym_app.gym_app.exceptions.BadRequestException;
 import com.gym_app.gym_app.exceptions.ResourceNotFoundException;

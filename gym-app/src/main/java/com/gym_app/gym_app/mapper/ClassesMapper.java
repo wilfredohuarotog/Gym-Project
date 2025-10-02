@@ -1,12 +1,10 @@
 package com.gym_app.gym_app.mapper;
 
-import com.gym_app.gym_app.dto.ClassesDto;
 import com.gym_app.gym_app.dto.responses.ClassesResponseDto;
 import com.gym_app.gym_app.entities.ClassesEntity;
 import com.gym_app.gym_app.entities.ScheduleEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 
 import java.util.List;
 

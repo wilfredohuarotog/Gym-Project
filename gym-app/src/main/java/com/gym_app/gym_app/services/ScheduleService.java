@@ -1,6 +1,6 @@
 package com.gym_app.gym_app.services;
 
-import com.gym_app.gym_app.dto.ScheduleDto;
+import com.gym_app.gym_app.dto.requests.ScheduleDto;
 
 import java.util.List;
 
