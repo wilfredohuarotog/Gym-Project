@@ -20,21 +20,20 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class AgreementServiceImpl implements AgreementService {
 
-
     private final AgreementRepository agreementRepository;
     private final MemberShipRepository memberShipRepository;
     private final AgreementMapper agreementMapper;
 
     @Override
-    public AgreementRenewalResponseDto agreementRenewalById (AgreementRenewalDto agreementRenewalDto, Long id) {
+    public AgreementRenewalResponseDto agreementRenewalById(AgreementRenewalDto agreementRenewalDto, Long id) {
 
         AgreementEntity agreement = agreementRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("Agreement with ID: "+ id+ "doesn't exist"));
 
         MemberShipEntity memberShip = memberShipRepository.findById(agreementRenewalDto.memberShipId())
-                .orElseThrow(()-> new BadRequestException("MemberShip with ID: "+ agreementRenewalDto.memberShipId()+ "doesn't exist"));
+                .orElseThrow(()-> new ResourceNotFoundException("MemberShip with ID: "+ agreementRenewalDto.memberShipId()+ "doesn't exist"));
 
-        if(agreement.getMember().getStatus().equals(MemberStatus.ACTIVE)){
+        if (agreement.getMember().getStatus().equals(MemberStatus.ACTIVE)) {
             throw new BadRequestException("the member still has current membership");
         }
 

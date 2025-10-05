@@ -13,6 +13,7 @@ import com.gym_app.gym_app.mapper.RegistrationMapper;
 import com.gym_app.gym_app.repositories.*;
 import com.gym_app.gym_app.services.RegistrationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +46,10 @@ public class RegistrationServiceImpl implements RegistrationService {
         ClassesEntity classes = classesRepository.findById(registrationDto.classesId())
                 .orElseThrow(() -> new ResourceNotFoundException("Class with this ID  doesn't exist"));
 
+        if (!memberRepository.findClassesByMemberDni(registrationDto.dni()).contains(classes)) {
+            throw new BadRequestException("You cannot enroll in this class, it is not covered by your membership.");
+        }
+
         ScheduleEntity schedule = scheduleRepository.findById(registrationDto.scheduleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Schedule not Found"));
 
@@ -60,8 +65,8 @@ public class RegistrationServiceImpl implements RegistrationService {
             throw new BadRequestException("There is already a record with the same class and schedule for this member");
         }
 
-        if(classes.getCapacity()<=registrationRepository
-                .countByClassesIdAndScheduleId(classes.getId(),schedule.getId())){
+        if (classes.getCapacity() <= registrationRepository
+                .countByClassesIdAndScheduleId(classes.getId(), schedule.getId())) {
             throw new ResourceNotFoundException("The class in this schedule is full. Registration for the next class begins the following day");
         }
 
@@ -110,6 +115,19 @@ public class RegistrationServiceImpl implements RegistrationService {
         RegistrationEntity registration = registrationRepository.findById(id)
                         .orElseThrow(()->new ResourceNotFoundException("There is no registration with ID: "+id));
 
-        registrationRepository.delete(registration);
+        try {
+            registrationRepository.delete(registration);
+        }
+        catch (DataIntegrityViolationException e){
+            throw new BadRequestException("Cannot delete schedule due to existing references in the database");
+        }
+    }
+
+    @Override
+    public void deleteExpiredRegistrations() {
+
+        LocalDate today = LocalDate.now();
+        List<RegistrationEntity> expired = registrationRepository.findByScheduleDay(today.getDayOfWeek());
+        registrationRepository.deleteAll(expired);
     }
 }

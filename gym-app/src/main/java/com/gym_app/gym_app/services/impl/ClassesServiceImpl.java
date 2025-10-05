@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ClassesServiceImpl implements ClassesService {
 
-
     private final ClassesRepository classesRepository;
     private final CoachRepository coachRepository;
     private final ScheduleRepository scheduleRepository;
@@ -40,7 +39,7 @@ public class ClassesServiceImpl implements ClassesService {
     public ClassesResponseDto findById(Long id) {
 
         ClassesEntity classes = classesRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException("ggggg"));
+                .orElseThrow(() -> new ResourceNotFoundException("There is no class with ID: " + id));
 
         return classesMapper.toClassesResponse(classes);
     }
@@ -48,32 +47,32 @@ public class ClassesServiceImpl implements ClassesService {
     @Override
     public void saveClass(ClassesDto classesDto) {
 
-        if(classesRepository.existsByName(classesDto.name())){
-            throw new BadRequestException("Ya existe una clase para esa disciplina");
+        if (classesRepository.existsByName(classesDto.name())) {
+            throw new BadRequestException("There is already a class for that discipline");
         }
 
         CoachEntity coach = coachRepository.findById(classesDto.coachId())
-                .orElseThrow(()-> new BadRequestException("There is no coach with this ID"));
+                .orElseThrow(() -> new BadRequestException("There is no coach with this ID"));
 
         List<ScheduleEntity> schedule = classesDto.scheduleId().stream()
-                        .map(id->{
-                            ScheduleEntity scheduleEntity= scheduleRepository.findById(id)
-                                    .orElseThrow(()->new BadRequestException("There is no schedule with ID: "+id));
+                .map(id -> {
+                    ScheduleEntity scheduleEntity = scheduleRepository.findById(id)
+                            .orElseThrow(() -> new BadRequestException("There is no schedule with ID: " + id));
 
-                            //Validando que el horario no este ocupado por otra clase (no puede haber dos o más clases en un mismo horario)
-                            if(classesRepository.existsByScheduleIdAndIdNot(id, null)){
-                                ClassesEntity classes = classesRepository.findBySchedule_Id(id).get();
-                                throw new BadRequestException("El horario con ID: "+id+" ya está la clase: "+ classes.getName());
-                            }
-                            return scheduleEntity;
-                        })
+                    //Validando que el horario no este ocupado por otra clase (no puede haber dos o más clases en un mismo horario)
+                    if (classesRepository.existsByScheduleIdAndIdNot(id, null)) {
+                        ClassesEntity classes = classesRepository.findBySchedule_Id(id).get();
+                        throw new BadRequestException("The schedule with ID: " + id + " is already assigned to the class: " + classes.getName());
+                    }
+                    return scheduleEntity;
+                })
                 .collect(Collectors.toList());
 
         classesRepository.save(ClassesEntity.builder()
-                        .name(classesDto.name())
-                        .capacity(classesDto.capacity())
-                        .schedule(schedule)
-                        .coach(coach)
+                .name(classesDto.name())
+                .capacity(classesDto.capacity())
+                .schedule(schedule)
+                .coach(coach)
                 .build());
     }
 
@@ -81,20 +80,20 @@ public class ClassesServiceImpl implements ClassesService {
     public ClassesResponseDto updateClass(ClassesDto classesDto, Long id) {
 
         ClassesEntity classes = classesRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException("There is no class with this ID"));
+                .orElseThrow(() -> new BadRequestException("There is no class with this ID: " + id));
 
         CoachEntity coach = coachRepository.findById(classesDto.coachId())
                 .orElseThrow(() -> new BadRequestException("There is no coach with this ID"));
 
         List<ScheduleEntity> schedule = classesDto.scheduleId().stream()
-                .map(idAux->{
-                    ScheduleEntity scheduleEntity= scheduleRepository.findById(idAux)
-                            .orElseThrow(()->new BadRequestException("There is no schedule with ID: "+idAux));
+                .map(idAux -> {
+                    ScheduleEntity scheduleEntity = scheduleRepository.findById(idAux)
+                            .orElseThrow(() -> new BadRequestException("There is no schedule with ID: " + idAux));
 
                     //Validando que el horario no este ocupado por otra clase (no puede haber dos o más clases en un mismo horario)
-                    if(classesRepository.existsByScheduleIdAndIdNot(idAux, id)){
+                    if (classesRepository.existsByScheduleIdAndIdNot(idAux, id)) {
                         ClassesEntity classesAux = classesRepository.findBySchedule_Id(idAux).get();
-                        throw new BadRequestException("El horario con ID: "+idAux+" ya está la clase: "+ classesAux.getName());
+                        throw new BadRequestException("The schedule with ID: " + idAux + " is already assigned to the class: " + classesAux.getName());
                     }
                     return scheduleEntity;
 
@@ -110,13 +109,13 @@ public class ClassesServiceImpl implements ClassesService {
     }
 
     @Override
-    public void deleteCoach(Long id) {
+    public void deleteClass(Long id) {
         ClassesEntity classes = classesRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("There is no class with this ID"));
 
-        try{
+        try {
             classesRepository.delete(classes);
-        } catch (DataIntegrityViolationException e){
+        } catch (DataIntegrityViolationException e) {
             throw new BadRequestException("Cannot delete class due to existing reference in the database");
         }
 

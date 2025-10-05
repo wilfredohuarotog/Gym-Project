@@ -1,6 +1,7 @@
 package com.gym_app.gym_app.services;
 
 import com.gym_app.gym_app.dto.requests.MemberDto;
+import com.gym_app.gym_app.dto.requests.MemberUpdateDto;
 import com.gym_app.gym_app.dto.responses.ActiveMemberResponseDto;
 import com.gym_app.gym_app.dto.responses.MemberResponseDto;
 
@@ -14,12 +15,12 @@ public interface MemberService {
 
     MemberResponseDto findById(Long id);
 
-    MemberResponseDto updateMember(MemberDto memberDto, Long id);
+    MemberResponseDto updateMember(MemberUpdateDto memberDto, Long id);
 
     void deleteMember(Long id);
 
     ActiveMemberResponseDto isMemberActive(String dni);
 
-
+    void expiredMembers ();
 
 }

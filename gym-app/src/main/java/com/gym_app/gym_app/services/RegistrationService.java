@@ -13,4 +13,6 @@ public interface RegistrationService {
 
     void deleteById(Long id);
 
+    void deleteExpiredRegistrations();
+
 }

@@ -15,5 +15,5 @@ public interface ClassesService {
 
     ClassesResponseDto updateClass(ClassesDto classesDto, Long id);
 
-    void deleteCoach(Long id);
+    void deleteClass(Long id);
 }

@@ -20,7 +20,7 @@ public record ClassesDto(
 
         @NotNull
         @Min(value = 10, message = "the minimum capacity is 10")
-        @Max(value = 50, message = "the minimum capacity is 10")
+        @Max(value = 50, message = "the maximum capacity is 50")
         Long capacity
 
 ) {

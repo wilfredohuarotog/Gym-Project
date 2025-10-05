@@ -1,10 +1,12 @@
 package com.gym_app.gym_app.services.impl;
 
 import com.gym_app.gym_app.dto.requests.MemberDto;
+import com.gym_app.gym_app.dto.requests.MemberUpdateDto;
 import com.gym_app.gym_app.dto.responses.ActiveMemberResponseDto;
 import com.gym_app.gym_app.dto.responses.MemberResponseDto;
 import com.gym_app.gym_app.entities.AgreementEntity;
 import com.gym_app.gym_app.entities.MemberEntity;
+import com.gym_app.gym_app.entities.MemberShipEntity;
 import com.gym_app.gym_app.entities.emuns.MemberStatus;
 import com.gym_app.gym_app.exceptions.BadRequestException;
 import com.gym_app.gym_app.exceptions.ResourceNotFoundException;
@@ -12,9 +14,9 @@ import com.gym_app.gym_app.mapper.MemberMapper;
 import com.gym_app.gym_app.repositories.MemberRepository;
 import com.gym_app.gym_app.repositories.MemberShipRepository;
 import com.gym_app.gym_app.services.MemberService;
+import com.gym_app.gym_app.services.PublishEventsMemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,8 +31,8 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final MemberShipRepository memberShipRepository;
     private final MemberMapper memberMapper;
-    private final KafkaTemplate kafkaTemplate;
-
+    private final PublishEventsMemberService publishEventsMemberService;
+    //private final KafkaTemplate kafkaTemplate;
 
     @Override
     public List<MemberResponseDto> findAll() {
@@ -69,7 +71,8 @@ public class MemberServiceImpl implements MemberService {
         member.setStatus(MemberStatus.ACTIVE);
         memberRepository.save(member);
 
-        kafkaTemplate.send("new-member",memberMapper.toMemberResponseDto(member));
+        //kafkaTemplate.send("new-member",memberMapper.toMemberResponseDto(member));
+        publishEventsMemberService.publishEventNewMemberNotification(memberMapper.toMemberResponseDto(member));
 
     }
 
@@ -83,7 +86,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MemberResponseDto updateMember(MemberDto memberDto, Long id) {
+    public MemberResponseDto updateMember(MemberUpdateDto memberDto, Long id) {
 
         MemberEntity member = memberRepository.findById(id)
                 .orElseThrow(()->new ResourceNotFoundException("Member with ID: "+ id +" doesn't exist"));
@@ -120,5 +123,27 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(()->new ResourceNotFoundException("Member with DNI: "+ dni + "doesn't exist"));
 
         return memberMapper.toActiveMemberDto(member);
+    }
+
+    @Override
+    public void expiredMembers() {
+
+        LocalDate today = LocalDate.now();
+        List<MemberEntity> expiredMembers =
+                memberRepository.findByStatusAndAgreementEndDateBefore(MemberStatus.ACTIVE, today);
+
+        if (expiredMembers.isEmpty()){
+            log.info("There are no expired members");
+            return;
+        }
+
+        expiredMembers.forEach(expired -> {
+                    expired.setStatus(MemberStatus.INACTIVE);
+                    MemberResponseDto memberResponseDto = memberMapper.toMemberResponseDto(expired);
+                    publishEventsMemberService.publishEventExpiredMemberNotification(memberResponseDto);
+                }
+            );
+
+        memberRepository.saveAll(expiredMembers);
     }
 }

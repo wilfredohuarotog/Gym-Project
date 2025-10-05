@@ -1,7 +1,6 @@
 package com.gym_app.gym_app.scheduling;
 
-import com.gym_app.gym_app.entities.RegistrationEntity;
-import com.gym_app.gym_app.repositories.RegistrationRepository;
+import com.gym_app.gym_app.services.RegistrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -15,15 +14,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RegistrationTasks {
 
-    public final RegistrationRepository registrationRepository;
+//    public final RegistrationRepository registrationRepository;
+    private final RegistrationService registrationService;
 
     @Scheduled(cron = "0 59 23 * * *")
     public void deleteExpiredRegistrations(){
-        LocalDate today = LocalDate.now();
-
-        List<RegistrationEntity> expired = registrationRepository.findByScheduleDay(today.getDayOfWeek());
-
-        registrationRepository.deleteAll(expired);
+//        LocalDate today = LocalDate.now();
+//
+//        List<RegistrationEntity> expired = registrationRepository.findByScheduleDay(today.getDayOfWeek());
+//
+//        registrationRepository.deleteAll(expired);
+        registrationService.deleteExpiredRegistrations();
     }
 
 

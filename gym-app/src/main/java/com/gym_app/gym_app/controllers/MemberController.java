@@ -1,6 +1,7 @@
 package com.gym_app.gym_app.controllers;
 
 import com.gym_app.gym_app.dto.requests.MemberDto;
+import com.gym_app.gym_app.dto.requests.MemberUpdateDto;
 import com.gym_app.gym_app.dto.responses.ActiveMemberResponseDto;
 import com.gym_app.gym_app.dto.responses.MemberResponseDto;
 import com.gym_app.gym_app.services.MemberService;
@@ -38,7 +39,7 @@ public class MemberController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MemberResponseDto> updateMember(@Valid @RequestBody MemberDto memberDto, @PathVariable Long id) {
+    public ResponseEntity<MemberResponseDto> updateMember(@Valid @RequestBody MemberUpdateDto memberDto, @PathVariable Long id) {
         return ResponseEntity.ok(memberService.updateMember(memberDto,id));
     }
 

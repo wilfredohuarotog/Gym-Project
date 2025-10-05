@@ -70,6 +70,15 @@ public class CoachServiceImpl implements CoachService {
      */
     @Override
     public CoachDto saveCoach(CoachDto coachDto) {
+
+        if (coachRepository.existsByDni(coachDto.dni())) {
+            throw new BadRequestException("The DNI already exists");
+        }
+
+        if (coachRepository.existsByPhoneNumber(coachDto.phoneNumber())) {
+            throw new BadRequestException("The phone number already exists");
+        }
+
         CoachEntity coach = coachRepository.save(coachMapper.toEntity(coachDto));
         return coachMapper.toDto(coach) ;
     }
@@ -87,6 +96,14 @@ public class CoachServiceImpl implements CoachService {
 
         CoachEntity coach = coachRepository.findById(id)
                 .orElseThrow(()->new ResourceNotFoundException("Coach with ID: "+ id+" doesn't exist"));
+
+        if (coachRepository.existsByDniAndIdNot(coachDto.dni(), id)) {
+            throw new BadRequestException("The DNI already belongs to another coach");
+        }
+
+        if (coachRepository.existsByPhoneNumberAndIdNot(coachDto.phoneNumber(), id)) {
+            throw new BadRequestException("The phone number already belongs to another coach");
+        }
 
         coachMapper.updateEntityFromDto(coachDto,coach);
 

@@ -10,6 +10,7 @@ import com.gym_app.gym_app.repositories.ClassesRepository;
 import com.gym_app.gym_app.repositories.MemberShipRepository;
 import com.gym_app.gym_app.services.MemberShipService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class MemberShipServiceImpl implements MemberShipService {
             throw new BadRequestException("The membership with this name already exists");
         }
 
-        List<ClassesEntity> classes = memberShipDto.classes_id().stream()
+        List<ClassesEntity> classes = memberShipDto.classesId().stream()
                 .map(id ->
                         classesRepository.findById(id)
                                 .orElseThrow(() -> new BadRequestException("There is no class with this ID: " + id))
@@ -60,13 +61,14 @@ public class MemberShipServiceImpl implements MemberShipService {
             throw new BadRequestException("The membership with this name already exists");
         }
 
-        List<ClassesEntity> classes = memberShipDto.classes_id().stream()
+        List<ClassesEntity> classes = memberShipDto.classesId().stream()
                 .map(idAux ->
                         classesRepository.findById(idAux)
                                 .orElseThrow(() -> new BadRequestException("There is no class with this ID: " + idAux))
                 )
                 .collect(Collectors.toList());
 
+        memberShip.setName(memberShipDto.name());
         memberShip.setClasses(classes);
         memberShipRepository.save(memberShip);
         return memberShipMapper.toMemberShipResponseDto(memberShip);
@@ -78,7 +80,10 @@ public class MemberShipServiceImpl implements MemberShipService {
         MemberShipEntity memberShip = memberShipRepository.findById(id)
                 .orElseThrow(()->new BadRequestException("There is no membership with this ID: "+ id));
 
-        memberShipRepository.delete(memberShip);
-
+        try {
+            memberShipRepository.delete(memberShip);
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("Cannot delete class due to existing reference in the database");
+        }
     }
 }

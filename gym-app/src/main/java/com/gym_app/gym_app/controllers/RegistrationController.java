@@ -1,6 +1,7 @@
 package com.gym_app.gym_app.controllers;
 
 import com.gym_app.gym_app.dto.requests.RegistrationDto;
+import com.gym_app.gym_app.dto.responses.RegistrationResponseDto;
 import com.gym_app.gym_app.services.RegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,16 +11,16 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/registration")
+@RequestMapping("api/v1/gym/registration")
 public class RegistrationController {
 
     private final RegistrationService registrationService;
 
     @PostMapping
-    public ResponseEntity<?> saveRegistration(@Valid @RequestBody RegistrationDto registrationDto) {
-        registrationService.saveRegistration(registrationDto);
+    public ResponseEntity<RegistrationResponseDto> saveRegistration(@Valid @RequestBody RegistrationDto registrationDto) {
+
         //return new ResponseEntity<>("Registration saved",HttpStatus.CREATED);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Registration saved");
+        return ResponseEntity.status(HttpStatus.CREATED).body(registrationService.saveRegistration(registrationDto));
     }
 
     @GetMapping("/search")

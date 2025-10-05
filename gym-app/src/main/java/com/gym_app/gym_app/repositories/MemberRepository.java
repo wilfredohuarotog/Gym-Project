@@ -1,5 +1,6 @@
 package com.gym_app.gym_app.repositories;
 
+import com.gym_app.gym_app.entities.ClassesEntity;
 import com.gym_app.gym_app.entities.MemberEntity;
 import com.gym_app.gym_app.entities.RegistrationEntity;
 import com.gym_app.gym_app.entities.emuns.MemberStatus;
@@ -26,4 +27,11 @@ public interface MemberRepository extends JpaRepository<MemberEntity,Long> {
 
     @Query( "SELECT m.status FROM MemberEntity m WHERE m.dni = :dni")
     MemberStatus findStatusByDni(@Param("dni") String dni);
+
+    @Query("SELECT c FROM MemberEntity m " +
+            "JOIN m.agreement a " +
+            "JOIN a.memberShip ms " +
+            "JOIN ms.classes c " +
+            "WHERE m.dni = :dni")
+    List<ClassesEntity> findClassesByMemberDni(@Param("dni") String dni);
 }

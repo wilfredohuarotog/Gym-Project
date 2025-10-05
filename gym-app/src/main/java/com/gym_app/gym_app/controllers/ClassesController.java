@@ -43,8 +43,7 @@ public class ClassesController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteClass(@PathVariable Long id) {
-        classesService.deleteCoach(id);
+        classesService.deleteClass(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Class deleted");
     }
-
 }

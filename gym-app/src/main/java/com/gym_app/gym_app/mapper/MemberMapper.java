@@ -1,6 +1,7 @@
 package com.gym_app.gym_app.mapper;
 
 import com.gym_app.gym_app.dto.requests.MemberDto;
+import com.gym_app.gym_app.dto.requests.MemberUpdateDto;
 import com.gym_app.gym_app.dto.responses.ActiveMemberResponseDto;
 import com.gym_app.gym_app.dto.responses.MemberResponseDto;
 import com.gym_app.gym_app.entities.MemberEntity;
@@ -28,8 +29,8 @@ public interface MemberMapper {
     ActiveMemberResponseDto toActiveMemberDto(MemberEntity memberEntity);
 
     //Recordatorio, no ignorar el agreement pra que se pueda actualizar tbm
-    @Mapping(target = "agreement", ignore = true)
-    void updateEntityFromDto(MemberDto memberDto, @MappingTarget MemberEntity memberEntity);
+    //@Mapping(target = "agreement", ignore = true)
+    void updateEntityFromDto(MemberUpdateDto memberUpdateDto, @MappingTarget MemberEntity memberEntity);
 
     //To activeMember
     default List<String> memberClasses(List<RegistrationEntity> registration){

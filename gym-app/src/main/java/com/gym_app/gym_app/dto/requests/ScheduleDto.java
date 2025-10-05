@@ -11,13 +11,13 @@ public record ScheduleDto(
 
         Long id,
 
-        @NotBlank
+        @NotNull(message = "Day of week is required")
         DayOfWeek day,
 
-        @NotNull
+        @NotNull(message = "Start time is required")
         LocalTime startTime,
 
-        @NotNull
+        @NotNull(message = "End time is required")
         LocalTime endTime
 
 ) {
