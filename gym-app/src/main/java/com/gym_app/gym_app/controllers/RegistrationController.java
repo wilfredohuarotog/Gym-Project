@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/gym/registration")
@@ -16,10 +18,14 @@ public class RegistrationController {
 
     private final RegistrationService registrationService;
 
+    @GetMapping
+    public ResponseEntity<List<RegistrationResponseDto>> findAllRegistration() {
+         List<RegistrationResponseDto> registrationResponseDtos = registrationService.findAllRegistration();
+         return ResponseEntity.ok(registrationResponseDtos);
+    }
+
     @PostMapping
     public ResponseEntity<RegistrationResponseDto> saveRegistration(@Valid @RequestBody RegistrationDto registrationDto) {
-
-        //return new ResponseEntity<>("Registration saved",HttpStatus.CREATED);
         return ResponseEntity.status(HttpStatus.CREATED).body(registrationService.saveRegistration(registrationDto));
     }
 

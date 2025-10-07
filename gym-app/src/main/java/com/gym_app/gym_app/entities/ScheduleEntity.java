@@ -28,5 +28,4 @@ public class ScheduleEntity{
     @Column(name = "end_time")
     private LocalTime endTime;
 
-
 }

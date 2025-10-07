@@ -7,10 +7,13 @@ import com.gym_app.gym_app.exceptions.ResourceNotFoundException;
 import com.gym_app.gym_app.mapper.ScheduleMapper;
 import com.gym_app.gym_app.repositories.ScheduleRepository;
 import com.gym_app.gym_app.services.ScheduleService;
+import com.gym_app.gym_app.validators.ScheduleValidatorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -20,8 +23,10 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
     private final ScheduleMapper scheduleMapper;
+    private final ScheduleValidatorService scheduleValidatorService;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ScheduleDto> findAllSchedule() {
         return scheduleRepository.findAll().stream()
                 .map(scheduleMapper::toDto)
@@ -31,8 +36,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public ScheduleDto findById(Long id) {
 
-        ScheduleEntity schedule = scheduleRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException("Schedule with this ID: "+ id + "doesn't exist"));
+        ScheduleEntity schedule = getScheduleById(id);
 
         return scheduleMapper.toDto(schedule);
     }
@@ -40,79 +44,40 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public ScheduleDto saveSchedule(ScheduleDto scheduleDto) {
 
-        List<ScheduleEntity> existingSchedules =
-                scheduleRepository.findByDay(scheduleDto.day());
+        List<ScheduleEntity> existingSchedules = getSchedulesByDay(scheduleDto.day());
 
-        LocalTime newStart = scheduleDto.startTime();
-        LocalTime newEnd = scheduleDto.endTime();
-        LocalTime duration = newStart.plusHours(1);
+        /*
+        Validación de horarios:
+        - Se valida que que no haya solapamiento con horarios existentes.
+        - Se valida que el nuevo horario de inicio no sea igual ni despues del termino de clase.
+        - Se valida que el horario sea dentro de las 6 am a 11 pm (horario de operación).
+        - Se valida que el como minimo un horario tenga 1 hora de duración.
+         */
+        scheduleValidatorService.validateSchedule(scheduleDto, existingSchedules);
 
-        if (newEnd.isBefore(duration)){
-            throw new BadRequestException("The minimum duration for a schedule must be at least 1 hour.");
-        }
-
-        boolean overlaps = existingSchedules.stream().anyMatch(s -> {
-            LocalTime existingStart = s.getStartTime();
-            LocalTime existingEnd = s.getEndTime();
-
-            // Solapamiento o duplicado exacto
-            return (newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart))
-                    || (newStart.equals(existingStart) && newEnd.equals(existingEnd));
-        });
-
-        if (overlaps) {
-            throw new BadRequestException(
-                    "The schedule "+ scheduleDto.day() +" [" + newStart + " - " + newEnd + "] overlaps or duplicates an existing schedule."
-            );
-        }
-
-        ScheduleEntity schedule = scheduleRepository.save(scheduleMapper.toEntity(scheduleDto));
-        return scheduleMapper.toDto(schedule);
+        ScheduleEntity savedSchedule = scheduleRepository.save(scheduleMapper.toEntity(scheduleDto));
+        return scheduleMapper.toDto(savedSchedule);
     }
 
     @Override
     public ScheduleDto updateSchedule(ScheduleDto scheduleDto, Long id) {
 
-        ScheduleEntity schedule = scheduleRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException("Schedule with this ID: "+ id+ "doesn't exist"));
+        ScheduleEntity schedule = getScheduleById(id);
 
-        List<ScheduleEntity> existingSchedules =
-                scheduleRepository.findByDayAndIdNot(scheduleDto.day(), id);
+        List<ScheduleEntity> existingSchedules = getSchedulesByDay(scheduleDto.day());
 
-        LocalTime newStart = scheduleDto.startTime();
-        LocalTime newEnd = scheduleDto.endTime();
-        LocalTime duration = newStart.plusHours(1);
-
-        if (newEnd.isBefore(duration)){
-            throw new BadRequestException("The minimum duration for a schedule must be at least 1 hour.");
-        }
-
-        boolean overlaps = existingSchedules.stream().anyMatch(s -> {
-            LocalTime existingStart = s.getStartTime();
-            LocalTime existingEnd = s.getEndTime();
-
-            // Solapamiento o duplicado exacto
-            return (newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart))
-                    || (newStart.equals(existingStart) && newEnd.equals(existingEnd));
-        });
-
-        if (overlaps) {
-            throw new BadRequestException(
-                    "The schedule "+scheduleDto.day() +" [" + newStart + " - " + newEnd + "] overlaps or duplicates an existing schedule."
-            );
-        }
+        scheduleValidatorService.validateSchedule(scheduleDto, existingSchedules);
 
         scheduleMapper.updateEntityFromDto(scheduleDto,schedule);
 
-        scheduleRepository.save(schedule);
-        return scheduleMapper.toDto(schedule);
+        ScheduleEntity updatedSchedule = scheduleRepository.save(schedule);
+        return scheduleMapper.toDto(updatedSchedule);
     }
 
     @Override
     public void deleteSchedule(Long id) {
 
-        ScheduleEntity schedule = scheduleRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException("Schedule with this ID: "+ id + "doesn't exist"));
+        ScheduleEntity schedule = getScheduleById(id);
 
         try{
             scheduleRepository.delete(schedule);
@@ -120,4 +85,16 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new BadRequestException("Cannot delete schedule due to existing references in the database");
         }
     }
+
+
+    //Metodos auxilires
+    private ScheduleEntity getScheduleById(Long id) {
+        return scheduleRepository.findById(id)
+                .orElseThrow(()->new ResourceNotFoundException("Schedule with this ID: "+ id + "doesn't exist"));
+    }
+
+    private List<ScheduleEntity> getSchedulesByDay(DayOfWeek day) {
+        return scheduleRepository.findByDay(day);
+    }
+
 }

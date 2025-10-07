@@ -28,25 +28,13 @@ public interface MemberMapper {
     @Mapping(expression = "java(memberClasses(memberEntity.getRegistrations()))", target = "classes")
     ActiveMemberResponseDto toActiveMemberDto(MemberEntity memberEntity);
 
-    //Recordatorio, no ignorar el agreement pra que se pueda actualizar tbm
-    //@Mapping(target = "agreement", ignore = true)
     void updateEntityFromDto(MemberUpdateDto memberUpdateDto, @MappingTarget MemberEntity memberEntity);
 
-    //To activeMember
     default List<String> memberClasses(List<RegistrationEntity> registration){
 
         if (registration == null){
             return List.of();
         }
-
-//        return registration.stream()
-//                .map(reg ->
-//                        reg.getClasses().getName()+"-> "
-//                                +reg.getClasses().getSchedule().stream()
-//                                .map(sch -> sch.getDay()+": "+sch.getStartTime()+" - "+sch.getEndTime())
-//                                .collect(Collectors.joining(", "))
-//                )
-//                .collect(Collectors.toList());
 
         return registration.stream()
                 .map(reg ->
@@ -55,7 +43,5 @@ public interface MemberMapper {
                                 +": "+reg.getSchedule().getStartTime()
                                 +" - "+reg.getSchedule().getEndTime())
                 .collect(Collectors.toList());
-
-
     }
 }

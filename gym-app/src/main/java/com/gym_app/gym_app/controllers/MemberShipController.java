@@ -20,15 +20,18 @@ public class MemberShipController {
 
     @GetMapping
     public ResponseEntity<List<MemberShipResponseDto>> findAll() {
-        //return new ResponseEntity<>(memberShipService.findAll(), HttpStatus.OK);
         return ResponseEntity.ok(memberShipService.findAll());
     }
 
+    @GetMapping("{id}")
+    public ResponseEntity<MemberShipResponseDto> findMemberShipByid(@PathVariable Long id) {
+        return ResponseEntity.ok(memberShipService.findMemberShipById(id));
+    }
+
     @PostMapping
-    public ResponseEntity<?> saveMemberShip(@Valid @RequestBody MemberShipDto memberShipDto) {
-        memberShipService.saveMemberShip(memberShipDto);
-        //return new ResponseEntity<>("Membership saved",HttpStatus.CREATED);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Membership saved");
+    public ResponseEntity<MemberShipResponseDto> saveMemberShip(@Valid @RequestBody MemberShipDto memberShipDto) {
+        MemberShipResponseDto memberShipResponseDto = memberShipService.saveMemberShip(memberShipDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(memberShipResponseDto);
     }
 
     @PutMapping("/{id}")
@@ -39,7 +42,6 @@ public class MemberShipController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteMemberShip(@PathVariable Long id) {
         memberShipService.deleteMemberShip(id);
-        //return ResponseEntity.ok("Membership deleted");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

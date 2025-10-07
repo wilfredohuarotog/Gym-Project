@@ -9,7 +9,9 @@ public interface MemberShipService {
 
     List<MemberShipResponseDto> findAll();
 
-    void saveMemberShip(MemberShipDto memberShipDto);
+    MemberShipResponseDto findMemberShipById(Long id);
+
+    MemberShipResponseDto saveMemberShip(MemberShipDto memberShipDto);
 
     MemberShipResponseDto updateMemberShip(MemberShipDto memberShipDto, Long id);
 

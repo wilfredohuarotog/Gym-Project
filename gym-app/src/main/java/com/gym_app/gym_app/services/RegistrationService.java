@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface RegistrationService {
 
+    List<RegistrationResponseDto> findAllRegistration();
+
     RegistrationResponseDto saveRegistration(RegistrationDto registrationDto);
 
     List<RegistrationResponseDto> registrationsByDni(String dni);

@@ -22,15 +22,13 @@ public class MemberController {
 
     @GetMapping
     public ResponseEntity<List<MemberResponseDto>> findAllMember() {
-        //return new ResponseEntity<>(memberService.findAll(), HttpStatus.OK);
         return ResponseEntity.ok(memberService.findAll());
     }
 
     @PostMapping
-    public ResponseEntity<?> saveMember(@Valid @RequestBody MemberDto memberDto) {
-        memberService.saveMember(memberDto);
-        //return new ResponseEntity<>("Member saved",HttpStatus.CREATED);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Member saved");
+    public ResponseEntity<MemberResponseDto> saveMember(@Valid @RequestBody MemberDto memberDto) {
+        MemberResponseDto memberResponse =  memberService.saveMember(memberDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(memberResponse);
     }
 
     @GetMapping("/{id}")

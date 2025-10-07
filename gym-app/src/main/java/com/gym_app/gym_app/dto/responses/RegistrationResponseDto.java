@@ -11,7 +11,7 @@ public record RegistrationResponseDto(
 
         String className,
 
-        String ScheduleName
+        String scheduleName
 
 ) {
 }

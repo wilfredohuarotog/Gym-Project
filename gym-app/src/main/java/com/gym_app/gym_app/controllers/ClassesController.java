@@ -21,7 +21,6 @@ public class ClassesController {
     @GetMapping
     public ResponseEntity<List<ClassesResponseDto>> findAllClasses() {
         return ResponseEntity.ok(classesService.findAllClasses());
-        //return new ResponseEntity<>(classesService.findAllClasses(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -30,10 +29,9 @@ public class ClassesController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createClass(@Valid @RequestBody ClassesDto classesDto) {
-        classesService.saveClass(classesDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Class created");
-        //return new ResponseEntity<>("Class created",HttpStatus.CREATED);
+    public ResponseEntity<ClassesResponseDto> createClass(@Valid @RequestBody ClassesDto classesDto) {
+        ClassesResponseDto classesResponseDto = classesService.saveClass(classesDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(classesResponseDto);
     }
 
     @PutMapping("/{id}")

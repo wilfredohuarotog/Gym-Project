@@ -9,14 +9,8 @@ import java.util.Optional;
 @Repository
 public interface ClassesRepository extends JpaRepository<ClassesEntity,Long> {
 
-//    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN TRUE ELSE FALSE END " +
-//            "FROM ClassesEntity c JOIN c.schedule s " +
-//            "WHERE s.id = :scheduleId")
-//    boolean existsScheduleInAnyClass(@Param("scheduleId") Long scheduleId);
-
-    boolean existsByName(String name);
+    boolean existsByNameAndIdNot(String name, Long id);
     boolean existsByScheduleIdAndIdNot(Long scheduleId, Long id);
     boolean existsById(Long id);
     Optional<ClassesEntity> findBySchedule_Id(Long scheduleId);
-    boolean existsByCoachId(Long id);
 }

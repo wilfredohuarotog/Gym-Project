@@ -19,7 +19,6 @@ public class CoachController {
 
     @GetMapping
     public ResponseEntity<List<CoachDto>> findAllCoaches() {
-        //return new ResponseEntity<>(coachService.findAllCoach(), HttpStatus.OK);
         return ResponseEntity.ok(coachService.findAllCoach());
     }
 

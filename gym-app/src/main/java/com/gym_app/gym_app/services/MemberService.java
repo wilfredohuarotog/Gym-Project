@@ -11,7 +11,7 @@ public interface MemberService {
 
     List<MemberResponseDto> findAll();
 
-    void saveMember(MemberDto memberDto);
+    MemberResponseDto saveMember(MemberDto memberDto);
 
     MemberResponseDto findById(Long id);
 

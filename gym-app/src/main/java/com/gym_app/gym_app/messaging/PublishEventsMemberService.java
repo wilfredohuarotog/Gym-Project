@@ -1,4 +1,4 @@
-package com.gym_app.gym_app.services;
+package com.gym_app.gym_app.messaging;
 
 import com.gym_app.gym_app.dto.responses.MemberResponseDto;
 

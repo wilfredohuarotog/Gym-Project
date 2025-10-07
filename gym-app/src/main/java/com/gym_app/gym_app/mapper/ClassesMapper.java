@@ -12,9 +12,6 @@ import java.util.List;
 public interface ClassesMapper {
 
     @Mapping(source = "capacity", target = "availableSlots")
-//    @Mapping(source = "schedule.day", target = "day")
-//    @Mapping(source = "schedule.startTime", target = "startTime")
-//    @Mapping(source = "schedule.endTime", target = "endTime")
     @Mapping(expression = "java(scheduleToString(classes.getSchedule()))",target = "schedules")
     @Mapping(expression = "java(classes.getCoach().getFirstName()+ \" \"+ classes.getCoach().getLastName())",target = "coach")
     ClassesResponseDto toClassesResponse(ClassesEntity classes);

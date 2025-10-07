@@ -12,6 +12,9 @@ import com.gym_app.gym_app.exceptions.ResourceNotFoundException;
 import com.gym_app.gym_app.mapper.RegistrationMapper;
 import com.gym_app.gym_app.repositories.*;
 import com.gym_app.gym_app.services.RegistrationService;
+import com.gym_app.gym_app.validators.RegistrationValidatorService;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -31,89 +34,48 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final ClassesRepository classesRepository;
     private final ScheduleRepository scheduleRepository;
     private final RegistrationMapper registrationMapper;
+    private final RegistrationValidatorService registrationValidatorService;
+
+    @Override
+    public List<RegistrationResponseDto> findAllRegistration() {
+        return registrationRepository.findAll().stream()
+                .map(registrationMapper::toRegistrationResponseDto)
+                .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional
     public RegistrationResponseDto saveRegistration(RegistrationDto registrationDto) {
 
-        MemberEntity member = memberRepository.findByDni(registrationDto.dni())
-                .orElseThrow(() -> new ResourceNotFoundException("Member with this DNI doesn't exist"));
+        MemberEntity member = getMemberByDni(registrationDto.dni());
+        ClassesEntity classes = getClassById(registrationDto.classesId());
+        ScheduleEntity schedule = getScheduleById(registrationDto.scheduleId());
 
-        if (memberRepository.findStatusByDni(registrationDto.dni()).equals(MemberStatus.INACTIVE)){
-            throw new BadRequestException("Member is inactive");
-        }
+        registrationValidatorService.validateNewRegistration(member, classes, schedule);
 
-        ClassesEntity classes = classesRepository.findById(registrationDto.classesId())
-                .orElseThrow(() -> new ResourceNotFoundException("Class with this ID  doesn't exist"));
+        RegistrationEntity registration = createNewRegistration(classes, schedule, member);
 
-        if (!memberRepository.findClassesByMemberDni(registrationDto.dni()).contains(classes)) {
-            throw new BadRequestException("You cannot enroll in this class, it is not covered by your membership.");
-        }
-
-        ScheduleEntity schedule = scheduleRepository.findById(registrationDto.scheduleId())
-                .orElseThrow(() -> new ResourceNotFoundException("Schedule not Found"));
-
-        if (!classes.getSchedule().contains(schedule)) {
-            throw new BadRequestException("Schedule incorrect");
-        }
-
-        if(schedule.getDay().equals(LocalDate.now().getDayOfWeek())&&schedule.getEndTime().isBefore(LocalTime.now())){
-            throw new BadRequestException("The class has ended. Registration for the next class begins the following day.");
-        }
-
-        if (registrationRepository.existsByMemberIdAndClassesIdAndScheduleId(member.getId(), classes.getId(), schedule.getId())){
-            throw new BadRequestException("There is already a record with the same class and schedule for this member");
-        }
-
-        if (classes.getCapacity() <= registrationRepository
-                .countByClassesIdAndScheduleId(classes.getId(), schedule.getId())) {
-            throw new ResourceNotFoundException("The class in this schedule is full. Registration for the next class begins the following day");
-        }
-
-        RegistrationEntity registration = RegistrationEntity.builder()
-                .classes(classes)
-                .schedule(schedule)
-                .member(member)
-                .build();
-
-        registrationRepository.save(registration);
-
-        return RegistrationResponseDto.builder()
-                .id(registration.getId())
-                .className(registration.getClasses().getName())
-                .memberName(registration.getMember().getFirstName()+ " "+registration.getMember().getLastName())
-                .ScheduleName(registration.getSchedule().getDay().name()+": "+
-                        registration.getSchedule().getStartTime()+" - "+
-                        registration.getSchedule().getEndTime())
-                .build();
+        return registrationMapper.toRegistrationResponseDto(
+                registrationRepository.save(registration)
+        );
     }
 
     @Override
     public List<RegistrationResponseDto> registrationsByDni(String dni) {
 
-        MemberEntity member = memberRepository.findByDni(dni).
-                orElseThrow(()->new ResourceNotFoundException("There is no member with DNI: "+ dni));
+        MemberEntity member = getMemberByDni(dni);
 
         List<RegistrationEntity> registrations = registrationRepository.findByMember(member);
 
         return registrations.stream()
-                .map(reg -> RegistrationResponseDto.builder()
-                        .id(reg.getId())
-                        .className(reg.getClasses().getName())
-                        .memberName(reg.getMember().getFirstName() + " " + reg.getMember().getLastName())
-                        .ScheduleName(reg.getSchedule().getDay().name() + ": " +
-                                reg.getSchedule().getStartTime() + " - " + reg.getSchedule().getEndTime())
-                        .build()
-                )
+                .map(registrationMapper::toRegistrationResponseDto)
                 .collect(Collectors.toList());
-
     }
 
     @Override
     public void deleteById(Long id) {
 
-        RegistrationEntity registration = registrationRepository.findById(id)
-                        .orElseThrow(()->new ResourceNotFoundException("There is no registration with ID: "+id));
+        RegistrationEntity registration = getRegistrationById(id);
 
         try {
             registrationRepository.delete(registration);
@@ -129,5 +91,39 @@ public class RegistrationServiceImpl implements RegistrationService {
         LocalDate today = LocalDate.now();
         List<RegistrationEntity> expired = registrationRepository.findByScheduleDay(today.getDayOfWeek());
         registrationRepository.deleteAll(expired);
+    }
+
+
+    //Metodos auxiliares
+
+    private ScheduleEntity getScheduleById(Long id) {
+        return scheduleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+    }
+
+    private ClassesEntity getClassById(Long id) {
+        return classesRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Class with this ID doesn't exist"));
+
+    }
+
+    private RegistrationEntity getRegistrationById (Long id) {
+        return registrationRepository.findById(id)
+                .orElseThrow(()->new ResourceNotFoundException("There is no registration with ID: "+id));
+    }
+
+    private MemberEntity getMemberByDni(String dni) {
+        return memberRepository.findByDni(dni)
+                .orElseThrow(() -> new ResourceNotFoundException("Member with this DNI doesn't exist"));
+    }
+
+    private RegistrationEntity createNewRegistration (ClassesEntity classes,
+                                                      ScheduleEntity schedule,
+                                                      MemberEntity member) {
+        return RegistrationEntity.builder()
+                .classes(classes)
+                .schedule(schedule)
+                .member(member)
+                .build();
     }
 }

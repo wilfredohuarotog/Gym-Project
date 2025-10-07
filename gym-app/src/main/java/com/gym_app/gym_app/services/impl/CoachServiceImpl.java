@@ -8,6 +8,7 @@ import com.gym_app.gym_app.mapper.CoachMapper;
 import com.gym_app.gym_app.repositories.ClassesRepository;
 import com.gym_app.gym_app.repositories.CoachRepository;
 import com.gym_app.gym_app.services.CoachService;
+import com.gym_app.gym_app.validators.CoachValidatorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -15,28 +16,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Implementación del servicio de Coaches.
- *
- * Se encarga de la lógica de negocio relacionada con los entrenadores:
- * - Crear, actualizar y eliminar coaches.
- * - Buscar coaches individuales o listarlos todos.
- * -  Usa {@link CoachRepository} para el acceso a datos y {@link CoachMapper} para mapear entre entidades y DTOs.
- */
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class CoachServiceImpl implements CoachService {
 
     private final CoachRepository coachRepository;
-    private final ClassesRepository classesRepository;
     private final CoachMapper coachMapper;
+    private final CoachValidatorService coachValidatorService;
 
-    /**
-     * Recupera una lista de todos los entrenadores existentes.
-     *
-     * @return Una lista de {@link CoachDto} que representa a todos los entrenadores.
-     */
     @Override
     @Transactional(readOnly = true)
     public List<CoachDto> findAllCoach() {
@@ -46,93 +34,61 @@ public class CoachServiceImpl implements CoachService {
                 .toList();
     }
 
-    /**
-     * Busca un entrenador por su identificador único.
-     *
-     * @param id El ID del entrenador a buscar.
-     * @return Un {@link CoachDto} que representa al entrenador encontrado.
-     * @throws ResourceNotFoundException si no se encuentra un entrenador con el ID proporcionado.
-     */
     @Override
     @Transactional(readOnly = true)
     public CoachDto findById(Long id) {
 
-        CoachEntity coach = coachRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Coach with ID: "+ id+" doesn't exist"));
+        CoachEntity coach = getCoachById(id);
 
         return coachMapper.toDto(coach);
     }
 
-    /**
-     * Guarda un nuevo entrenador en la base de datos.
-     *
-     * @param coachDto El DTO que contiene los datos del entrenador a guardar.
-     */
     @Override
+    @Transactional
     public CoachDto saveCoach(CoachDto coachDto) {
 
-        if (coachRepository.existsByDni(coachDto.dni())) {
-            throw new BadRequestException("The DNI already exists");
-        }
-
-        if (coachRepository.existsByPhoneNumber(coachDto.phoneNumber())) {
-            throw new BadRequestException("The phone number already exists");
-        }
+        coachValidatorService.validateNewCoach(coachDto);
 
         CoachEntity coach = coachRepository.save(coachMapper.toEntity(coachDto));
-        return coachMapper.toDto(coach) ;
+        return coachMapper.toDto(coach);
     }
 
-    /**
-     * Actualiza los datos de un entrenador existente.
-     *
-     * @param coachDto El DTO con los nuevos datos del entrenador.
-     * @param id       El ID del entrenador a actualizar.
-     * @return El {@link CoachDto} con los datos actualizados del entrenador.
-     * @throws ResourceNotFoundException si no se encuentra un entrenador con el ID proporcionado.
-     */
     @Override
+    @Transactional
     public CoachDto updateCoach(CoachDto coachDto, Long id) {
 
-        CoachEntity coach = coachRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException("Coach with ID: "+ id+" doesn't exist"));
+        CoachEntity coach = getCoachById(id);
 
-        if (coachRepository.existsByDniAndIdNot(coachDto.dni(), id)) {
-            throw new BadRequestException("The DNI already belongs to another coach");
-        }
-
-        if (coachRepository.existsByPhoneNumberAndIdNot(coachDto.phoneNumber(), id)) {
-            throw new BadRequestException("The phone number already belongs to another coach");
-        }
+        coachValidatorService.validateUpdateCoach(coachDto, id);
 
         coachMapper.updateEntityFromDto(coachDto,coach);
 
-        coachRepository.save(coach);
+        CoachEntity savedCoach = coachRepository.save(coach);
 
-        return coachMapper.toDto(coach);
+        return coachMapper.toDto(savedCoach);
     }
 
-    /**
-     * Elimina un entrenador de la base de datos por su identificador.
-     *
-     * @param id El ID del entrenador a eliminar.
-     * @throws ResourceNotFoundException si no se encuentra un entrenador con el ID proporcionado.
-     */
     @Override
+    @Transactional
     public void deleteCoach(Long id) {
 
-        if(classesRepository.existsByCoachId(id)){
-            throw new BadRequestException("Cannot delete coach. There are classes assigned to this coach");
-        }
-
-        CoachEntity coach = coachRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Coach with ID: "+ id+" doesn't exist"));
+        CoachEntity coach = getCoachById(id);
 
         try{
             coachRepository.delete(coach);
         } catch (DataIntegrityViolationException e){
             throw new BadRequestException("Cannot delete coach due to existing references in the database");
         }
+
+    }
+
+
+    //Metodo auxiliares
+
+    private CoachEntity getCoachById(Long id) {
+
+        return coachRepository.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Coach with ID: "+ id+" doesn't exist"));
 
     }
 }

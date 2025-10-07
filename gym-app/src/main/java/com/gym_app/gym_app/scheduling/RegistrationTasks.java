@@ -14,19 +14,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RegistrationTasks {
 
-//    public final RegistrationRepository registrationRepository;
     private final RegistrationService registrationService;
 
     @Scheduled(cron = "0 59 23 * * *")
     public void deleteExpiredRegistrations(){
-//        LocalDate today = LocalDate.now();
-//
-//        List<RegistrationEntity> expired = registrationRepository.findByScheduleDay(today.getDayOfWeek());
-//
-//        registrationRepository.deleteAll(expired);
+
         registrationService.deleteExpiredRegistrations();
     }
-
-
 
 }

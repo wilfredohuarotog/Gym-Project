@@ -12,9 +12,11 @@ import com.gym_app.gym_app.repositories.ClassesRepository;
 import com.gym_app.gym_app.repositories.CoachRepository;
 import com.gym_app.gym_app.repositories.ScheduleRepository;
 import com.gym_app.gym_app.services.ClassesService;
+import com.gym_app.gym_app.validators.ClassesValidatorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,8 +29,10 @@ public class ClassesServiceImpl implements ClassesService {
     private final CoachRepository coachRepository;
     private final ScheduleRepository scheduleRepository;
     private final ClassesMapper classesMapper;
+    private final ClassesValidatorService classesValidatorService;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ClassesResponseDto> findAllClasses() {
         return classesRepository.findAll().stream()
                 .map(classesMapper::toClassesResponse)
@@ -36,88 +40,96 @@ public class ClassesServiceImpl implements ClassesService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ClassesResponseDto findById(Long id) {
 
-        ClassesEntity classes = classesRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("There is no class with ID: " + id));
-
+        ClassesEntity classes = getClassById(id);
         return classesMapper.toClassesResponse(classes);
     }
 
     @Override
-    public void saveClass(ClassesDto classesDto) {
+    @Transactional
+    public ClassesResponseDto saveClass(ClassesDto classesDto) {
 
-        if (classesRepository.existsByName(classesDto.name())) {
-            throw new BadRequestException("There is already a class for that discipline");
-        }
+        CoachEntity coach = getCoachById(classesDto.coachId());
 
-        CoachEntity coach = coachRepository.findById(classesDto.coachId())
-                .orElseThrow(() -> new BadRequestException("There is no coach with this ID"));
+        List<ScheduleEntity> schedules = classesValidatorService.validateNewAndUpdateClass(classesDto, null);
 
-        List<ScheduleEntity> schedule = classesDto.scheduleId().stream()
-                .map(id -> {
-                    ScheduleEntity scheduleEntity = scheduleRepository.findById(id)
-                            .orElseThrow(() -> new BadRequestException("There is no schedule with ID: " + id));
+        ClassesEntity newClass = createNewClass(classesDto.name(), classesDto.capacity(), schedules,coach);
 
-                    //Validando que el horario no este ocupado por otra clase (no puede haber dos o más clases en un mismo horario)
-                    if (classesRepository.existsByScheduleIdAndIdNot(id, null)) {
-                        ClassesEntity classes = classesRepository.findBySchedule_Id(id).get();
-                        throw new BadRequestException("The schedule with ID: " + id + " is already assigned to the class: " + classes.getName());
-                    }
-                    return scheduleEntity;
-                })
-                .collect(Collectors.toList());
+        ClassesEntity savedClass = classesRepository.save(newClass);
 
-        classesRepository.save(ClassesEntity.builder()
-                .name(classesDto.name())
-                .capacity(classesDto.capacity())
-                .schedule(schedule)
-                .coach(coach)
-                .build());
+        return classesMapper.toClassesResponse(savedClass);
+
     }
 
     @Override
+    @Transactional
     public ClassesResponseDto updateClass(ClassesDto classesDto, Long id) {
 
-        ClassesEntity classes = classesRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException("There is no class with this ID: " + id));
+        ClassesEntity classes = getClassById(id);
 
-        CoachEntity coach = coachRepository.findById(classesDto.coachId())
-                .orElseThrow(() -> new BadRequestException("There is no coach with this ID"));
+        CoachEntity coach = getCoachById(classesDto.coachId());
 
-        List<ScheduleEntity> schedule = classesDto.scheduleId().stream()
-                .map(idAux -> {
-                    ScheduleEntity scheduleEntity = scheduleRepository.findById(idAux)
-                            .orElseThrow(() -> new BadRequestException("There is no schedule with ID: " + idAux));
+        List<ScheduleEntity> schedules = classesValidatorService.validateNewAndUpdateClass(classesDto, id);
 
-                    //Validando que el horario no este ocupado por otra clase (no puede haber dos o más clases en un mismo horario)
-                    if (classesRepository.existsByScheduleIdAndIdNot(idAux, id)) {
-                        ClassesEntity classesAux = classesRepository.findBySchedule_Id(idAux).get();
-                        throw new BadRequestException("The schedule with ID: " + idAux + " is already assigned to the class: " + classesAux.getName());
-                    }
-                    return scheduleEntity;
+        ClassesEntity updatesClass =  updateExistingClass(classes, classesDto.capacity(), classesDto.name(), coach,schedules);
 
-                })
-                .collect(Collectors.toList());
-
-        classes.setCapacity(classesDto.capacity());
-        classes.setName(classesDto.name());
-        classes.setCoach(coach);
-        classes.setSchedule(schedule);
-
-        return classesMapper.toClassesResponse(classesRepository.save(classes));
+        return classesMapper.toClassesResponse(classesRepository.save(updatesClass));
     }
 
     @Override
+    //@Transactional
     public void deleteClass(Long id) {
-        ClassesEntity classes = classesRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException("There is no class with this ID"));
+
+        ClassesEntity classes = getClassById(id);
 
         try {
             classesRepository.delete(classes);
         } catch (DataIntegrityViolationException e) {
             throw new BadRequestException("Cannot delete class due to existing reference in the database");
         }
+    }
 
+
+    //Metodos auxiliares
+
+    private ClassesEntity getClassById(Long id) {
+
+        return classesRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("There is no class with ID: " + id));
+    }
+
+    private CoachEntity getCoachById(Long id) {
+
+        return coachRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("There is no coach with this ID"));
+    }
+
+    private ClassesEntity createNewClass(String name,
+                                        Long capacity,
+                                        List<ScheduleEntity> schedules,
+                                        CoachEntity coach) {
+
+        return ClassesEntity.builder()
+                .name(name)
+                .capacity(capacity)
+                .schedule(schedules)
+                .coach(coach)
+                .build();
+    }
+
+    private ClassesEntity updateExistingClass(ClassesEntity classes,
+                                       Long capacity,
+                                       String name,
+                                       CoachEntity coach,
+                                       List<ScheduleEntity> schedules) {
+
+        classes.setCapacity(capacity);
+        classes.setName(name);
+        classes.setCoach(coach);
+        classes.setSchedule(schedules);
+
+        return classes;
     }
 }

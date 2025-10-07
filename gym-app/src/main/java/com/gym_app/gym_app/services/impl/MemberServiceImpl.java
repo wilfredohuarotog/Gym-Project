@@ -8,16 +8,18 @@ import com.gym_app.gym_app.entities.AgreementEntity;
 import com.gym_app.gym_app.entities.MemberEntity;
 import com.gym_app.gym_app.entities.MemberShipEntity;
 import com.gym_app.gym_app.entities.emuns.MemberStatus;
-import com.gym_app.gym_app.exceptions.BadRequestException;
 import com.gym_app.gym_app.exceptions.ResourceNotFoundException;
 import com.gym_app.gym_app.mapper.MemberMapper;
 import com.gym_app.gym_app.repositories.MemberRepository;
 import com.gym_app.gym_app.repositories.MemberShipRepository;
+import com.gym_app.gym_app.services.AgreementCreationService;
 import com.gym_app.gym_app.services.MemberService;
-import com.gym_app.gym_app.services.PublishEventsMemberService;
+import com.gym_app.gym_app.messaging.PublishEventsMemberService;
+import com.gym_app.gym_app.validators.MemberValidatorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,7 +34,8 @@ public class MemberServiceImpl implements MemberService {
     private final MemberShipRepository memberShipRepository;
     private final MemberMapper memberMapper;
     private final PublishEventsMemberService publishEventsMemberService;
-    //private final KafkaTemplate kafkaTemplate;
+    private final MemberValidatorService memberValidatorService;
+    private final AgreementCreationService agreementCreationService;
 
     @Override
     public List<MemberResponseDto> findAll() {
@@ -42,86 +45,57 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void saveMember(MemberDto memberDto) {
+    @Transactional
+    public MemberResponseDto saveMember(MemberDto memberDto) {
 
-        if(memberRepository.existsByEmail(memberDto.email())){
-            throw new BadRequestException("A member with this email already exists");
-        }
-        if(memberRepository.existsByPhoneNumber(memberDto.phoneNumber())){
-            throw new BadRequestException("A member with this phone already exists");
-        }
-        if(memberRepository.existsByDni(memberDto.dni())){
-            throw new BadRequestException("A member with this DNI already exists");
-        }
+        //Se valida que el DNI, número de telefónico y el correo sean unicos
+        memberValidatorService.validateNewMember(memberDto);
 
-        MemberEntity member = memberMapper.toEntity(memberDto);
+        //Se crea el miembro y su contrato
+        MemberEntity member = createMemberAndAgreement(memberDto);
 
-        AgreementEntity agreement = AgreementEntity.builder()
-                .memberShip(
-                        memberShipRepository.findById(memberDto.agreement().memberShipId())
-                                .orElseThrow(()->new BadRequestException("There is no membership with this ID"))
-                )
-                .months(memberDto.agreement().months())
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now().plusMonths(memberDto.agreement().months()))
-                .member(member)
-                .build();
+        //Persistencia del miembro
+        MemberEntity savedMember = memberRepository.save(member);
 
-        member.setAgreement(agreement);
-        member.setStatus(MemberStatus.ACTIVE);
-        memberRepository.save(member);
+        MemberResponseDto memberResponse = memberMapper.toMemberResponseDto(savedMember);
 
-        //kafkaTemplate.send("new-member",memberMapper.toMemberResponseDto(member));
-        publishEventsMemberService.publishEventNewMemberNotification(memberMapper.toMemberResponseDto(member));
-
+        //Publicación del evento de guardado de nuevo miembro
+        publishEventsMemberService.publishEventNewMemberNotification(
+                memberResponse
+        );
+        return memberResponse;
     }
 
     @Override
     public MemberResponseDto findById(Long id) {
 
-        MemberEntity member = memberRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException("Member with ID: "+ id +" doesn't exist"));
-
+        MemberEntity member = getMemberById(id);
         return memberMapper.toMemberResponseDto(member);
     }
 
     @Override
     public MemberResponseDto updateMember(MemberUpdateDto memberDto, Long id) {
 
-        MemberEntity member = memberRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException("Member with ID: "+ id +" doesn't exist"));
+        MemberEntity member = getMemberById(id);
+        memberValidatorService.validateMemberUpdate(memberDto, id);
 
-        if(memberRepository.existsByEmailAndIdNot(memberDto.email(),id)){
-            throw new BadRequestException("A member with this email already exists");
-        }
-        if(memberRepository.existsByPhoneNumberAndIdNot(memberDto.phoneNumber(),id)){
-            throw new BadRequestException("A member with this phone already exists");
-        }
-        if(memberRepository.existsByDniAndIdNot(memberDto.dni(),id)){
-            throw new BadRequestException("A member with this DNI already exists");
-        }
+        memberMapper.updateEntityFromDto(memberDto, member);
+        MemberEntity updatedMember = memberRepository.save(member);
 
-        memberMapper.updateEntityFromDto(memberDto,member);
-        memberRepository.save(member);
-
-        return memberMapper.toMemberResponseDto(member);
+        return memberMapper.toMemberResponseDto(updatedMember);
     }
 
     @Override
     public void deleteMember(Long id) {
 
-        MemberEntity member = memberRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException("Member with ID: "+ id +" doesn't exist"));
-
+        MemberEntity member = getMemberById(id);
         memberRepository.delete(member);
     }
 
     @Override
     public ActiveMemberResponseDto isMemberActive(String dni) {
 
-        MemberEntity member = memberRepository.findByDni(dni)
-                .orElseThrow(()->new ResourceNotFoundException("Member with DNI: "+ dni + "doesn't exist"));
-
+        MemberEntity member = getMemberByDni(dni);
         return memberMapper.toActiveMemberDto(member);
     }
 
@@ -132,8 +106,7 @@ public class MemberServiceImpl implements MemberService {
         List<MemberEntity> expiredMembers =
                 memberRepository.findByStatusAndAgreementEndDateBefore(MemberStatus.ACTIVE, today);
 
-        if (expiredMembers.isEmpty()){
-            log.info("There are no expired members");
+        if (expiredMembers.isEmpty()) {
             return;
         }
 
@@ -142,8 +115,45 @@ public class MemberServiceImpl implements MemberService {
                     MemberResponseDto memberResponseDto = memberMapper.toMemberResponseDto(expired);
                     publishEventsMemberService.publishEventExpiredMemberNotification(memberResponseDto);
                 }
-            );
+        );
 
         memberRepository.saveAll(expiredMembers);
+
     }
+
+
+    //Metodos auxilires
+
+    private MemberEntity createMemberAndAgreement(MemberDto memberDto) {
+
+        MemberEntity member = memberMapper.toEntity(memberDto);
+
+        MemberShipEntity memberShip = getMemberShipById(memberDto.agreement().memberShipId());
+
+        AgreementEntity agreement = agreementCreationService.createAgreement(memberShip, member, memberDto.agreement().months());
+
+        member.setAgreement(agreement);
+        member.setStatus(MemberStatus.ACTIVE);
+
+        return member;
+    }
+
+    private MemberEntity getMemberById(Long id) {
+
+        return memberRepository.findById(id)
+               .orElseThrow(()->new ResourceNotFoundException("Member with ID: "+ id +" doesn't exist"));
+    }
+
+    private MemberShipEntity getMemberShipById(Long id) {
+
+        return memberShipRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("There is no membership with this ID"));
+    }
+
+    private MemberEntity getMemberByDni(String dni) {
+
+        return memberRepository.findByDni(dni)
+                .orElseThrow(() -> new ResourceNotFoundException("Member with DNI: " + dni + "doesn't exist"));
+    }
+
 }

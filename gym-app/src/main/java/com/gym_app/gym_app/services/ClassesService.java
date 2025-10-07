@@ -11,7 +11,7 @@ public interface ClassesService {
 
     ClassesResponseDto findById(Long id);
 
-    void saveClass(ClassesDto classesDto);
+    ClassesResponseDto saveClass(ClassesDto classesDto);
 
     ClassesResponseDto updateClass(ClassesDto classesDto, Long id);
 

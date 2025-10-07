@@ -1,7 +1,6 @@
-package com.gym_app.gym_app.services.impl;
+package com.gym_app.gym_app.messaging;
 
 import com.gym_app.gym_app.dto.responses.MemberResponseDto;
-import com.gym_app.gym_app.services.PublishEventsMemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;

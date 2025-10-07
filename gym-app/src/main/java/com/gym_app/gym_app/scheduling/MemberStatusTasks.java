@@ -25,24 +25,4 @@ public class MemberStatusTasks {
         memberService.expiredMembers();
     }
 
-
-
-
-//    private final MemberRepository memberRepository;
-//    private final MemberMapper memberMapper;
-//    private final KafkaTemplate kafkaTemplate;
-//
-//    @Scheduled(cron = "0 0 6 * * *")
-//    public void deactivateExpiredMembers() {
-//        List<MemberEntity> expiredMembers =
-//                memberRepository.findByStatusAndAgreementEndDateBefore(MemberStatus.ACTIVE, LocalDate.now());
-//
-//        if (!expiredMembers.isEmpty()) {
-//            expiredMembers.forEach(member -> {
-//                member.setStatus(MemberStatus.INACTIVE);
-//                kafkaTemplate.send("membership-expired",memberMapper.toMemberResponseDto(member)) ;
-//            });
-//            memberRepository.saveAll(expiredMembers);
-//        }
-//    }
 }
