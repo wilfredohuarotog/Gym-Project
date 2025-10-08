@@ -9,10 +9,10 @@ Permite la gestión de miembros, entrenadores, clases, horarios, registros, cont
 - Hibernate (para la persistencia de datos)
 - MySQL (gestor para la base de datos de ppto-contrata)
 - Maven (como gestor de proyectos)
-- Apache Kafka
-- Lombok
-- JWT
-- Docker
+- Apache Kafka (mensajería entre microservicios)
+- Lombok (reducción de código)
+- JWT (autenticación y autorización)
+- Docker (contenedorización)
 
 # Arquitectura General
 
@@ -23,16 +23,7 @@ Permite la gestión de miembros, entrenadores, clases, horarios, registros, cont
 | **notification-service** | Escucha los eventos de `gym-app` a través de Kafka y envía correos electrónicos (notificaciones de registro y expiración de mebresía). |
 | **api-gateway**          | Centraliza las peticiones y aplica filtros de autenticación/autorización.                                                              |
 
-
-## Funcionalidades principales
-- CRUD de presupuestos para los microservicios ppto-contrata y ppto-origen.
-- Comunicación de microservicios mediante WebClient.
-- Eureka Server para el registro de microservicios. 
-- Config Server para centralizar la configuración de los microservicios.
-- Api Gateway para el enrutamiento de las solicitudes.
-- Patrón Circuit Breaker para evitar sobrecargar servicios que están temporalmente inactivos o con fallas.
-
-## Arquitectura
+## Diagrama de arquitectura
 
 ```mermaid
 flowchart LR
@@ -45,69 +36,100 @@ flowchart LR
     Notification_Service -->|SMTP| EmailServer
 ```
 
-#Flujo:
-El usuario realiza solicitudes al API Gateway, que enruta hacia los microservicios (ppto-origen o ppto-contrata). Estos se comunican con sus respectivas bases de datos y utilizan el Config-server para cargar su configuración. Ambos microservicios están registrados en Eureka-server para el descubrimiento dinámico.
-
 ## Ejecución del proyecto
 
 ### 1. Clonar el repositorio
 ```bash
-git clone https://github.com/wilfredohuarotog/Microservicios-Gestion-de-presupuestos.git
+git clone https://github.com/wilfredohuarotog/Gym-Project.git
 ```
 ### 2. Ingresar al directorio
 ```
-cd Microservicios-Gestion-de-presupuestos
+cd Gym-Project
 ```
-### 3. Ejecutar para cada microservicio:
+### 3. Configuración de variables de entorno del application.properties
 
-Levantar cada microservicio en consolas separadas.
+- Para gym-app y auth-service configurar la conexión a la base de datos.
+```
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USER}
+spring.datasource.password=${DB_PASSWORD}
+```
+- Para auth-service y api-gateway definir su clave secreta para la generación/validación del JWT.
+```
+security.key = ${SECRET_KEY}
+```
+- Para el notification-service definir las credenciales.
+```
+spring.kafka.mail.username = ${EMAIL_USERNAME}
+spring.kafka.mail.username = ${EMAIL_PASSWORD}
+```
+### 4. Levantar los microservicios
 
-- Config-server:
+Consideraciones previas:
+- Asegúrate de tener Kafka corriendo localmente o en Docker.
+- Crea las bases de datos necesarias (por ejemplo auth_db y gym_db).
+
+## Despliegue en Docker
+
+### 1. Generar las imagenes y levantar el servicios del docker-compose.yml
 ```
-mvn spring-boot:run -pl config-server
+docker compose up -build -d
 ```
-- Eureka-server:
+### 2. Detener la ejecución
 ```
-mvn spring-boot:run -pl eureka-server
-```
-- Api-gateway:
-```
-mvn spring-boot:run -pl gateway
-```
-- Ppto-origen:
-```
-mvn spring-boot:run -pl ppto-origen
-```
-- Ppto-contrata:
-```
-mvn spring-boot:run -pl ppto-contrata
+docker compose down
 ```
 
 ## Uso
-- Los microservicio ppto-origen y ppto-contrata permiten operaciones CRUD.
+
 - Todos los endpoints de los microservicios se consumen a través del Gateway `http://localhost:8080`.
-### Microservicio ppto-origen
 
-| Método | Endpoint                | Descripción                             |
-| ------ | ----------------------- | --------------------------------------- |        
-| GET    | `/api/v1/p-origen`      | Obtener todos los pptos origen   |
-| GET    | `/api/v1/p-origen/{id}` | Obtener un ppto origen por ID    |
-| POST   | `/api/v1/p-origen`      | Crear un nuevo ppto origen       |
-| PUT    | `/api/v1/p-origen/{id}` | Actualizar un ppto origen por ID |
-| DELETE | `/api/v1/p-origen/{id}` | Eliminar un ppto origen por ID   |
-| GET    | `/api/v1/p-origen/p-contrata/{id}` | Obtener pptos de contrata asociados a un ppto origen  |
+### Autenticación
 
-### Microservicio ppto-contrata
+El flujo de autenticación es manejado por auth-service:
 
-| Método | Endpoint                           | Descripción                                            |
-| ------ | ---------------------------------- | ------------------------------------------------------ |
-| GET    | `/api/v1/p-contrata`               | Obtener todos los pptos de contrata             |
-| GET    | `/api/v1/p-contrata/{id}`          | Obtener un ppto de contrata por ID              |
-| POST   | `/api/v1/p-contrata`               | Crear un nuevo ppto de contrata                 |
-| PUT    | `/api/v1/p-contrata/{id}`          | Actualizar un ppto de contrata por ID           |
-| DELETE | `/api/v1/p-contrata/{id}`          | Eliminar un ppto de contrata por ID             |
-| GET    | `/api/v1/p-contrata/p-origen/{id}` | Obtener pptos de contrata asociados a un ppto origen |
+- Endpoint de login: `POST /api/v1/auth/login`.
+```json
+{
+  "username": "wilfredo",
+  "password": "1234"
+}
+```
+Devuelve un Token JWT.
 
-### Documentación
-`Acceder:` [Documentación en Postman](https://documenter.getpostman.com/view/46041910/2sB3QFRCPr)
+- Endpoint de registro: `POST /api/v1/auth/register`.
+```json
+{
+  "username": "Alsson",
+  "password": "ali23",
+  "age": 28,
+  "email": "alison@gmail.com",
+  "role": "USER"
+}
+```
+Devuelve un Token JWT.
+
+- Usa el token JWT en el header para acceder a los demás endpoints:
+```
+Authorization: Bearer <tu_token>
+```
+
+### Endpoints principales - gym-app
+
+| Método   | Endpoint               | Descripción                    | Rol          |
+| -------- | ---------------------- | ------------------------------ | ------------ |
+| `GET`    | `/api/v1/gym/member`      | Listar todos los miembros      | ADMIN / USER |
+| `POST`   | `/api/v1/gym/member`      | Registrar nuevo miembro        | ADMIN / USER |
+| `PUT`    | `/api/v1/gym/member/{id}` | Actualizar datos de un miembro | ADMIN / USER |
+| `DELETE` | `/api/v1/gym/member/{id}` | Eliminar miembro               | ADMIN / USER |
+| `GET`    | `/api/v1/gym/member/search?dni=(el_dni)` | Verficiar estado del miembro por su DNI | ADMIN / USER |
+| `GET`    | `/api/v1/gym/coach`      | Listar entrenadores            | ADMIN |
+| `POST`   | `/api/v1/gym/class`      | Crear clase                    | ADMIN |
+| `POST`   | `//api/v1/gym/registration` | Crear el registro de un usuario para una clase | ADMIN / USER |
+
+### Ejemplo de flujo
+1. Login con el usuario `wilfredo / 1234` → obtén el token.
+2. Usa el token para crear un nuevo miembro.
+3. El **gym-app** envía un evento a Kafka.
+4. El **notification-service** escucha el evento y envía un correo al miembro.
 
