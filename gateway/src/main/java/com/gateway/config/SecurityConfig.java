@@ -1,6 +1,7 @@
 package com.gateway.config;
 
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -26,7 +27,8 @@ import java.util.List;
 //@EnableReactiveMethodSecurity
 public class SecurityConfig {
 
-    private static final String SECRET_KEY = "miclaveultrasegurasecretadefinitiva1234";
+    @Value("${security.key}")
+    private String secretKey;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -49,7 +51,7 @@ public class SecurityConfig {
 
     @Bean
     public ReactiveJwtDecoder jwtDecoder() {
-        SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+        SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
         return NimbusReactiveJwtDecoder.withSecretKey(key).build();
     }
 

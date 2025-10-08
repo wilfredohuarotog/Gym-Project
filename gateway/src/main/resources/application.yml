@@ -8,11 +8,11 @@ spring:
     gateway:
       routes:
         - id: auth-service
-          uri: 'http://localhost:8083'
+          uri: ${AUTH_SERVICE_URI:http://localhost:8083}
           predicates:
             - Path=/api/v1/auth/**
         - id: gym-app
-          uri: 'http://localhost:8081'
+          uri: ${GYM_SERVICE_URI:http://localhost:8081}
           predicates:
             - Path=/api/v1/gym/**
 

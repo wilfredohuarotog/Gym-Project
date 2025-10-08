@@ -25,42 +25,61 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  db:
+  gymdb:
     image: mysql:latest
-    container_name: database
+    container_name: gym-db
     ports:
       - "3307:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD_GYM}
+      MYSQL_DATABASE: ${MYSQL_DATABASE_GYM}
+      MYSQL_USER: ${MYSQL_USER_GYM}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD_GYM}
     volumes:
-      - mysql_data:/var/lib/mysql
+      - gym_data:/var/lib/mysql
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER_GYM}", "-p${MYSQL_PASSWORD_GYM}" ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 20s
 
-  gym_app:
+  securitydb:
+    image: mysql:latest
+    container_name: security-db
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD_SECURITY}
+      MYSQL_DATABASE: ${MYSQL_DATABASE_SECURITY}
+      MYSQL_USER: ${MYSQL_USER_SECURITY}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD_SECURITY}
+    volumes:
+      - security_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER_SECURITY}", "-p${MYSQL_PASSWORD_SECURITY}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  gym-app:
     build:
       context: ./gym-app
       dockerfile: Dockerfile
-    container_name: gym
+    container_name: gym-service
     ports:
       - "8081:8081"
     depends_on:
       kafka:
         condition: service_started
-      db:
+      gymdb:
         condition: service_healthy
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_DATASOURCE_URL: ${MYSQL_URL}
-      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
-      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_DATASOURCE_URL: ${MYSQL_URL_GYM}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER_GYM}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD_GYM}
 
   notification:
     build:
@@ -82,5 +101,34 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
       SPRING_MAIL_PROPERTIES_MAIL_DEBUG: "true"
 
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      securitydb:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: ${MYSQL_URL_SECURITY}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER_SECURITY}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD_SECURITY}
+      SECURITY_KEY: ${SECRET_KEY}
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SECURITY_KEY: ${SECRET_KEY}
+      AUTH_SERVICE_URI: http://auth-service:8083
+      GYM_SERVICE_URI: http://gym-app:8081
+
 volumes:
-  mysql_data:
+  gym_data:
+  security_data:
