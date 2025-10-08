@@ -3,55 +3,42 @@ package com.notification.listener;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notification.dto.MemberAgreementDto;
+import com.notification.service.EmailNotificationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Log4j2
 public class KafkaListenerService {
 
-    private final JavaMailSender javaMailSender;
     private final ObjectMapper objectMapper;
-    @Value("${spring.mail.username}")
-    private String email;
+    private final EmailNotificationService emailNotificationService;
 
     @KafkaListener(topics = "new-member", groupId = "mygroup")
-    public void sendEmailNewMember (String messageJson) throws JsonProcessingException {
-
-        MemberAgreementDto memberAgreementDto = objectMapper.readValue(messageJson, MemberAgreementDto.class);
-
-        String message = "Welcome "+ memberAgreementDto.name()+". Your agreement ID: "+memberAgreementDto.agreementId();
-
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-
-        mailMessage.setFrom(email);
-        mailMessage.setTo(memberAgreementDto.email());
-        mailMessage.setSubject("WELCOMEEEE");
-        mailMessage.setText(message);
-
-        javaMailSender.send(mailMessage);
-
+    public void sendEmailNewMember (String messageJson) {
+        MemberAgreementDto memberAgreementDto = parserMemberAgreement(messageJson);
+        emailNotificationService.sendEmailNewMember(memberAgreementDto);
     }
 
     @KafkaListener(topics = "membership-expired", groupId = "mygroup")
-    public void sendEmailMemberShipExpired (String messageJson) throws JsonProcessingException {
-
-        MemberAgreementDto memberAgreementDto = objectMapper.readValue(messageJson, MemberAgreementDto.class);
-
-        String message = "Good morning "+ memberAgreementDto.name()+". Your membership expired";
-
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-
-        mailMessage.setFrom(email);
-        mailMessage.setTo(memberAgreementDto.email());
-        mailMessage.setSubject("MEMBERSHIP EXPIRED");
-        mailMessage.setText(message);
-
-        javaMailSender.send(mailMessage);
-
+    public void sendEmailMemberShipExpired (String messageJson) {
+        MemberAgreementDto memberAgreementDto = parserMemberAgreement(messageJson);
+        emailNotificationService.sendEmailMemberShipExpired(memberAgreementDto);
     }
+
+    private MemberAgreementDto parserMemberAgreement(String messageJson) {
+        try {
+            return objectMapper.readValue(messageJson, MemberAgreementDto.class);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to parse message: {}", messageJson);
+            throw new RuntimeException(
+                    String.format("Failed to parse message: %s", messageJson)
+            );
+        }
+    }
+
 }
